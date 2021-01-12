@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string-array name="category_spinner">
+        <item>Хороший</item>
+        <item>Нормальный</item>
+        <item>Плохой</item>
+        <item>Ужасный</item>
+    </string-array>
+</resources>

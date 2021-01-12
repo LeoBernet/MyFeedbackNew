@@ -1,0 +1,63 @@
+<resources>
+    <string name="banner_id" translatable="false">ca-app-pub-3940256099942544/6300978111</string>
+
+    <string name="app_name">Feedback Flat</string>
+    <string name="my_ads">My ads</string>
+    <string name="good_car_ads">Good</string>
+    <string name="normal_pc_ads">Normal</string>
+    <string name="bed_smartphone_ads">Bad</string>
+    <string name="verybed_dm_ads">Horrible</string>
+    <string name="sign_up">"Registration "</string>
+    <string name="sign_in">Login</string>
+    <string name="sign_out">Exit</string>
+    <string name="account">Account</string>
+    <string name="read_feed">Read reviews</string>
+    <string name="email">Enter your e-mail</string>
+    <string name="password">Enter your password</string>
+    <string name="sign_up_button">Register now</string>
+    <string name="sign_in_button">Enter</string>
+    <string name="sign_in_or_sign_up">Login or register</string>
+
+    <!-- Edit Activity -->
+    <string name="edit_ac_title">Title</string>
+    <string name="edit_ac_price_name">Name or nick name</string>
+    <string name="edit_ac_tel_address">Address: City / Street / House / Building / Apartment</string>
+    <string name="edit_ac_discription">Description</string>
+
+    <!-- Edit Activity -->
+    <string name="toggle_open" translatable="false">Open</string>
+    <string name="toggle_close" translatable="false">Close</string>
+
+    <!-- Post Adapter -->
+
+    <string name="delete_title">Delete review?</string>
+    <string name="delete_message">Are you sure you want to delete the review?</string>
+    <string name="yes">Yes</string>
+    <string name="no">No</string>
+    <string name="item_deleted">Review successfully deleted!</string>
+    <string name="ok" translatable="false">OK</string>
+    <string name="alert">Attention!</string>
+    <string name="mail_not_verified">You haven\'t verified your account, check your email and verify your account! And log in with a new account!</string>
+    <string name="mail_verification">Your mail has been sent to email, please no, go to the link in the message to verify your account!</string>
+    <!-- Show Activity -->
+
+    <string name="address">"Address: "</string>
+
+    <!-- Choose Image Activity -->
+    <string name="main_image">Photo 1</string>
+    <string name="image2">Photo 2</string>
+    <string name="image3">Photo 3</string>
+    <string name="google_sign_up">Google Sign Up</string>
+    <string name="google_sign_in">Google Sign In</string>
+    <string name="send_email_again">Send again</string>
+    <string name="sign_link_message">You already have an account, log in to your existing account to register this email address!</string>
+    <string name="account_lincked">You have successfully attached an email address to your account!</string>
+    <string name="forget_password">Forgot your password?</string>
+    <string name="send_reset_password">Send</string>
+    <string name="forget_password_message">To recover your password, enter the email under which you are registered!</string>
+    <string name="email_is_empty">You did not enter your email.</string>
+    <string name="email_is_send">Password recovery instructions have been sent to the indicated mail!</string>
+    <string name="my_fav">Liked</string>
+
+
+</resources>

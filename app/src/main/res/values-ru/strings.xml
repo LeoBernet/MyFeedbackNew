@@ -1,0 +1,58 @@
+<resources>
+    <string name="app_name">My Feedback</string>
+    <string name="my_ads">Мои отзывы</string>
+    <string name="my_fav">Понравились</string>
+    <string name="good_car_ads">Хороший</string>
+    <string name="normal_pc_ads">Нормальный</string>
+    <string name="bed_smartphone_ads">Плохой</string>
+    <string name="verybed_dm_ads">Ужасный</string>
+    <string name="sign_up">Регистрация</string>
+    <string name="sign_in">Вход</string>
+    <string name="sign_out">Выход</string>
+    <string name="account">Аккаунт</string>
+    <string name="read_feed">Почитать отзывы</string>
+    <string name="email">Введите Ваш e-mail</string>
+    <string name="password">Введите Ваш пароль</string>
+    <string name="sign_up_button">Зарегистрироваться</string>
+    <string name="sign_in_button">Войти</string>
+    <string name="sign_in_or_sign_up">Войдите или зарегистрируйтесь</string>
+
+    <!-- Edit Activity -->
+    <string name="edit_ac_title">Заголовок</string>
+    <string name="edit_ac_price_name">Имя или ник</string>
+    <string name="edit_ac_tel_address">Адрес : Город/Улица/Дом/Корпус/Квартира</string>
+    <string name="edit_ac_discription">Описание</string>
+
+    <!-- Edit Activity -->
+
+    <!-- Post Adapter -->
+
+    <string name="delete_title">Удалить отзыв?</string>
+    <string name="delete_message">Вы действительно хотите удалить отзыв?</string>
+    <string name="yes">Да</string>
+    <string name="no">Нет</string>
+    <string name="item_deleted">Отзыв успешно удалён!</string>
+    <string name="alert">Внимание!</string>
+    <string name="mail_not_verified">Вы не подтвердили Ваш аккаунт, проверьте Вашу почту и подтвердите аккаунт! И зайдите под новым аккаунтом!</string>
+    <string name="mail_verification">Вам на почту был отправлен email, пожалуйста перейдите по ссылке в сообщении для подтверждения аккаунта!</string>
+    <!-- Show Activity -->
+
+    <string name="address">Адрес: </string>
+
+    <!-- Choose Image Activity -->
+    <string name="main_image">Фото 1</string>
+    <string name="image2">Фото 2</string>
+    <string name="image3">Фото 3</string>
+    <string name="google_sign_up">Регистрация через Google</string>
+    <string name="google_sign_in">Вход через Google аккаунт</string>
+    <string name="send_email_again">Отправить снова</string>
+    <string name="sign_link_message">У Вас уже есть аккаунт, войдите в Ваш существующий аккаунт для регистрации данного email адреса!</string>
+    <string name="account_lincked">Вы успешно прикрепили email адрес к Вашему аккаунту!</string>
+    <string name="forget_password">Забыли пароль?</string>
+    <string name="send_reset_password">Отаправить</string>
+    <string name="forget_password_message">Для восстановления пароля, введите email , под которым Вы зарегистрированы!</string>
+    <string name="email_is_empty">Вы не указали Ваш email.</string>
+    <string name="email_is_send">Инструкции по восстановлению пароля, отправлены на указаную почту!</string>
+
+
+</resources>

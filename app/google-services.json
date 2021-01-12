@@ -1,0 +1,48 @@
+{
+  "project_info": {
+    "project_number": "530462251524",
+    "firebase_url": "https://myfeedback-c4024.firebaseio.com",
+    "project_id": "myfeedback-c4024",
+    "storage_bucket": "myfeedback-c4024.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:530462251524:android:c3d460d4a8e6eb00ed3351",
+        "android_client_info": {
+          "package_name": "com.android.leobernet.myfeedback"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "530462251524-p5evlfh73fpcrj79ffs0ucbtt4e6heas.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.android.leobernet.myfeedback",
+            "certificate_hash": "fd53c6e5bd70042942eb287b097623327b313fcd"
+          }
+        },
+        {
+          "client_id": "530462251524-7qh852ubtv4hn2f3h8hh2i1qb6ugiojd.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBKF4-WwFK94y2eqJd7yRk8lOYfx3cBP64"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "530462251524-7qh852ubtv4hn2f3h8hh2i1qb6ugiojd.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
