@@ -1,15 +1,20 @@
 package com.android.leobernet.myfeedback.db;
 
 import android.content.Context;
+import android.content.SharedPreferences;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
-import androidx.room.Database;
 
 import com.android.leobernet.myfeedback.R;
 import com.android.leobernet.myfeedback.adapter.DataSender;
+import com.android.leobernet.myfeedback.adapter.PostAdapter;
+import com.android.leobernet.myfeedback.status.StatusItem;
+import com.android.leobernet.myfeedback.utils.MyConstants;
+import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
@@ -24,149 +29,25 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class DbManager {
-    public static final String MY_ACC_PATH = "accounts";
-    public static final String MY_ADS_PATH = "main_ads_path";
+    public static final String MAIN_ADS_PATH = "main_ads_path";
     public static final String MY_FAV_PATH = "my_fav";
-    public static final String MY_FAV_ADS_PATH = "my_fav_ads_path";
+    public static final String FAV_ADS_PATH = "fav_path";
+    public static final String USER_FAV_ID = "userFavId";
+    public static final String ORDER_BY_CAT_TIME = "/status/cat_time";
+    public static final String ORDER_BY_TIME = "/status/filter_by_time";
+    public static final String TOTAL_VIEWS = "status/totalViews";
     private Context context;
     private Query mQuery;
-    private List<NewPost> newPostList;
+    private final List<NewPost> newPostList;
     private DataSender dataSender;
     private FirebaseDatabase db;
     private FirebaseStorage fs;
-    private FirebaseAuth mAuth;
+    private final FirebaseAuth mAuth;
     private int cat_ads_counter = 0;
     private int deleteImageCounter = 0;
-    private List<FavPathItem> mainListFav;
-    private OnFavRecivedListener onFavRecivedListener;
-
-    public void deleteItem(final NewPost newPost)
-    {
-        StorageReference sRef = null;
-        switch (deleteImageCounter)
-        {
-            case 0:
-               if (!newPost.getImageId().equals("empty")){
-                   sRef = fs.getReferenceFromUrl(newPost.getImageId());
-            }
-               else
-               {
-                   deleteImageCounter++;
-                   deleteItem(newPost);
-               }
-                break;
-            case 1:
-                if (!newPost.getIm_id2().equals("empty")){
-                    sRef = fs.getReferenceFromUrl(newPost.getIm_id2());
-                }
-                else
-                {
-                    deleteImageCounter++;
-                    deleteItem(newPost);
-                }
-                break;
-            case 2:
-                if (!newPost.getIm_id3().equals("empty")){
-                    sRef = fs.getReferenceFromUrl(newPost.getIm_id3());
-                }
-                else
-                {
-                    deleteDBItem(newPost);
-                    sRef = null;
-                    deleteImageCounter = 0;
-                }
-                break;
-        }
-
-        if (sRef == null)return;
-
-        sRef.delete().addOnSuccessListener(new OnSuccessListener<Void>() {
-            @Override
-            public void onSuccess(Void aVoid) {
-               deleteImageCounter++;
-               if (deleteImageCounter < 3)
-               {
-                   deleteItem(newPost);
-               }
-               else
-               {
-                   deleteImageCounter = 0;
-                   deleteDBItem(newPost);
-               }
-            }
-        }).addOnFailureListener(new OnFailureListener() {
-            @Override
-            public void onFailure(@NonNull Exception e) {
-                Toast.makeText(context, "Фотография не удалилась!!!", Toast.LENGTH_SHORT).show();
-            }
-        });
-
-    }
-
-    private void deleteDBItem(NewPost newPost)
-    {
-        DatabaseReference dbRef = db.getReference(newPost.getCat());
-        dbRef.child(newPost.getKey()).removeValue().addOnSuccessListener(new OnSuccessListener<Void>() {
-            @Override
-            public void onSuccess(Void aVoid) {
-                Toast.makeText(context, R.string.item_deleted, Toast.LENGTH_SHORT).show();
-            }
-        }).addOnFailureListener(new OnFailureListener() {
-            @Override
-            public void onFailure(@NonNull Exception e) {
-                Toast.makeText(context, "Отзыв не был удалён!!!", Toast.LENGTH_SHORT).show();
-            }
-        });
-    }
-
-    public void updateTotalViews(final NewPost newPost)
-    {
-        DatabaseReference dRef =FirebaseDatabase.getInstance().getReference(MY_ADS_PATH);
-        int total_views;
-        try
-        {
-            total_views = Integer.parseInt(newPost.getTotal_views());
-        }
-        catch (NumberFormatException e)
-        {
-            total_views = 0;
-        }
-        total_views++;
-        StatusItem statusItem = new StatusItem();
-        statusItem.totalViews = String.valueOf(total_views);
-        dRef.child(newPost.getKey()).child("status").setValue(statusItem);
-    }
-
-    public void updateFav(final String favPath) {
-
-        if (mAuth.getUid() == null) return;
-        DatabaseReference dRef =FirebaseDatabase.getInstance().getReference(MY_ACC_PATH);
-        String key = dRef.push().getKey();
-
-        if (key == null) return;
-        boolean isFav = false;
-        String keyToDelete = "";
-        for (FavPathItem favPathItem : mainListFav){
-
-            if (favPathItem.getFavPath().equals(favPath)) {
-                isFav = true;
-                keyToDelete = favPathItem.getKey();
-            }
-        }
-        if (isFav){
-
-            deleteFav(keyToDelete);
-
-        }else {
-
-            FavPathItem favPathItem = new FavPathItem();
-            favPathItem.setKey(key);
-            favPathItem.setFavPath(favPath);
-            dRef.child(mAuth.getUid()).child(MY_FAV_PATH).child(key).child(MY_FAV_ADS_PATH).setValue(favPathItem);
-
-        }
-
-    }
+    private DatabaseReference mainNode;
+    private String filter;
+    private String orderByFilter;
 
     public DbManager(DataSender dataSender, Context context) {
         this.dataSender = dataSender;
@@ -175,28 +56,133 @@ public class DbManager {
         db = FirebaseDatabase.getInstance();
         fs = FirebaseStorage.getInstance();
         mAuth = FirebaseAuth.getInstance();
-        mainListFav = new ArrayList<>();
+        mainNode = db.getReference(MAIN_ADS_PATH);
     }
 
-    public void getDataFromDb(String cat) {
+    public void onResume(SharedPreferences pref){
+        filter = pref.getString(MyConstants.FILTER,"");
+        orderByFilter = pref.getString(MyConstants.ORDER_BY__FILTER,"");
+    }
 
-        if (mAuth.getUid() !=null){
+    public void deleteItem(final NewPost newPost) {
 
-        DatabaseReference dbRef = db.getReference(MY_ADS_PATH);
-        mQuery = dbRef.orderByChild(mAuth.getUid() + "/feedback/time");
-        readDataUpdate();
+        StorageReference sRef = null;
+
+        switch (deleteImageCounter) {
+            case 0:
+                if (!newPost.getImageId().equals("empty")) {
+                    sRef = fs.getReferenceFromUrl(newPost.getImageId());
+
+                } else {
+                    deleteImageCounter++;
+                    deleteItem(newPost);
+                }
+                break;
+            case 1:
+                if (!newPost.getIm_id2().equals("empty")) {
+                    sRef = fs.getReferenceFromUrl(newPost.getIm_id2());
+
+                } else {
+                    deleteImageCounter++;
+                    deleteItem(newPost);
+                }
+                break;
+            case 2:
+                if (!newPost.getIm_id3().equals("empty")) {
+                    sRef = fs.getReferenceFromUrl(newPost.getIm_id3());
+
+                } else {
+                    deleteDBItem(newPost);
+                    sRef = null;
+                    deleteImageCounter = 0;
+                }
+                break;
         }
 
+        if (sRef == null) return;
+
+        sRef.delete().addOnSuccessListener(new OnSuccessListener<Void>() {
+            @Override
+            public void onSuccess(Void aVoid) {
+                deleteImageCounter++;
+                if (deleteImageCounter < 3) {
+                    deleteItem(newPost);
+
+                } else {
+                    deleteImageCounter = 0;
+                    deleteDBItem(newPost);
+                }
+            }
+        }).addOnFailureListener(new OnFailureListener() {
+            @Override
+            public void onFailure(@NonNull Exception e) {
+                Toast.makeText(context, R.string.image_no_delete, Toast.LENGTH_SHORT).show();
+            }
+        });
     }
-    public void getMyAdsDataFromDb(String uid) {
 
-        if (mAuth.getUid() == null)return;
-        if (newPostList.size() > 0) newPostList.clear();
-        DatabaseReference dbRef = db.getReference(MY_ADS_PATH);
-        mQuery = dbRef.orderByChild(mAuth.getUid() + "/feedback/uid").equalTo(uid);
-        readMyAdsDataUpdate();
-        cat_ads_counter++;
+    private void deleteDBItem(NewPost newPost) {
 
+        DatabaseReference dbRef = db.getReference(DbManager.MAIN_ADS_PATH);
+        dbRef.child(newPost.getKey()).child("status").removeValue();
+        dbRef.child(newPost.getKey()).child(mAuth.getUid()).removeValue().addOnSuccessListener(new OnSuccessListener<Void>() {
+            @Override
+            public void onSuccess(Void aVoid) {
+                Toast.makeText(context, R.string.item_deleted, Toast.LENGTH_SHORT).show();
+            }
+        }).addOnFailureListener(new OnFailureListener() {
+            @Override
+            public void onFailure(@NonNull Exception e) {
+                Toast.makeText(context, R.string.feedback_no_delete, Toast.LENGTH_SHORT).show();
+            }
+        });
+    }
+
+    public void updateTotalCounter(final String counterPath, String key, String counter) {
+
+        DatabaseReference dRef = FirebaseDatabase.getInstance().getReference(MAIN_ADS_PATH);
+        int totalCounter;
+        try {
+            totalCounter = Integer.parseInt(counter);
+        } catch (NumberFormatException e) {
+            totalCounter = 0;
+        }
+        totalCounter++;
+        dRef.child(key).child(counterPath).setValue(String.valueOf(totalCounter));
+    }
+
+    public void getMyAds(String orderBy) {
+
+        mQuery = mainNode.orderByChild(orderBy).equalTo(mAuth.getUid());
+        readDataUpdate();
+    }
+
+    public void getDataFromDb(String cat, String lastTime,boolean lastPage) {
+
+        if (mAuth.getUid() == null) return;
+        String divider = "_";
+        String orderBy = (cat.equals(MyConstants.DIF_CAT)) ? ORDER_BY_TIME : ORDER_BY_CAT_TIME;
+        if (cat.equals(MyConstants.DIF_CAT)) {
+            divider = "";
+            cat = "";
+        }
+        if (!orderByFilter.equals("")){
+            orderBy = orderByFilter;
+            divider = "";
+        }
+       if (!lastPage)
+           mQuery = mainNode.orderByChild(orderBy).startAt(cat).endAt(cat + divider + lastTime + "\uf8ff").limitToLast(MyConstants.ADS_LIMIT);
+       else
+           mQuery = mainNode.orderByChild(orderBy).startAt(cat + divider + lastTime).limitToFirst(MyConstants.ADS_LIMIT);
+
+        readDataUpdate();
+    }
+
+    public void getSearchResult(String searchText) {
+        if (mAuth.getUid() == null) return;
+        DatabaseReference dbRef = db.getReference(MAIN_ADS_PATH);
+        mQuery = dbRef.orderByChild("/status/" + orderByFilter).startAt(filter + searchText).endAt(filter + searchText + "\uf8ff").limitToLast(MyConstants.ADS_LIMIT);
+        readDataUpdate();
     }
 
     public void readDataUpdate() {
@@ -205,17 +191,29 @@ public class DbManager {
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
                 if (newPostList.size() > 0) newPostList.clear();
                 for (DataSnapshot ds : dataSnapshot.getChildren()) {
+                    NewPost newPost = null;
 
-                    NewPost newPost = ds.getChildren().iterator().next().child("feedback").getValue(NewPost.class);
+                    for (DataSnapshot ds2 : ds.getChildren()) {
+                        if (newPost == null)
+                            newPost = ds2.child("feedback").getValue(NewPost.class);
+                    }
+
                     StatusItem statusItem = ds.child("status").getValue(StatusItem.class);
+                    String uid = mAuth.getUid();
+                    if (uid != null) {
+                        String favUid = (String) ds.child(FAV_ADS_PATH).child(mAuth.getUid()).child(USER_FAV_ID).getValue();
+                        if (newPost != null)
+                            newPost.setFavCounter(ds.child(FAV_ADS_PATH).getChildrenCount());
+                        if (favUid != null && newPost != null) newPost.setFav(true);
+                    }
 
                     if (newPost != null && statusItem != null) {
+
                         newPost.setTotal_views(statusItem.totalViews);
-                }
+                    }
                     newPostList.add(newPost);
                 }
                 dataSender.onDataRecived(newPostList);
-
             }
 
             @Override
@@ -225,98 +223,53 @@ public class DbManager {
         });
     }
 
-    public void readMyFav(final List<FavPathItem> favList) {
+    public void updateFav(final NewPost newPost, PostAdapter.ViewHolderData holder) {
 
-        DatabaseReference dbRef = db.getReference();
-        final List<NewPost> tempFavList = new ArrayList<>();
-        dbRef.addListenerForSingleValueEvent(new ValueEventListener() {
-            @Override
-            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-
-                tempFavList.clear();
-                for (FavPathItem item : favList) {
-
-                    NewPost newPost = dataSnapshot.child(item.getFavPath()).getValue(NewPost.class);
-                    String[] statusArrayPath = item.getFavPath().split("/");
-                    StatusItem statusItem = dataSnapshot.child(statusArrayPath[0]).
-                            child(statusArrayPath[1]).child("status").getValue(StatusItem.class);
-
-                    if(newPost != null && statusItem != null) {
-
-                        newPost.setTotal_views(statusItem.totalViews);
-                    }
-
-                    tempFavList.add(newPost);
-
-
-                }
-
-                dataSender.onDataRecived(tempFavList);
-            }
-
-            @Override
-            public void onCancelled(@NonNull DatabaseError databaseError) {
-
-            }
-        });
+        if (newPost.isFav()) {
+            deleteFav(newPost, holder);
+        } else {
+            addFav(newPost, holder);
+        }
     }
 
-    public void readMyAdsDataUpdate() {
-        mQuery.addListenerForSingleValueEvent(new ValueEventListener() {
-            @Override
-            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-
-                for (DataSnapshot ds : dataSnapshot.getChildren()) {
-
-                    NewPost newPost = ds.child(mAuth.getUid() + "/feedback").getValue(NewPost.class);
-                    StatusItem statusItem = ds.child("status").getValue(StatusItem.class);
-// тут взял в фигурные скобки после !=null) {
-
-                    if (newPost !=null && statusItem !=null) {
-                        newPost.setTotal_views(statusItem.totalViews);
-                    }
-                    newPostList.add(newPost);
-                }
-                    dataSender.onDataRecived(newPostList);
-                }
-
-            @Override
-            public void onCancelled(@NonNull DatabaseError databaseError) {
-
-            }
-        });
-    }
-
-    public void readFavs() {
-        DatabaseReference dRef = FirebaseDatabase.getInstance().getReference(MY_ACC_PATH);
-        if (mAuth.getUid() == null)return;
-
-        dRef.child(mAuth.getUid()).child(MY_FAV_PATH).addValueEventListener(new ValueEventListener() {
-            @Override
-            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-
-                mainListFav.clear();
-                for (DataSnapshot ds: dataSnapshot.getChildren()){
-
-                    mainListFav.add(ds.child(MY_FAV_ADS_PATH).getValue(FavPathItem.class));
-                }
-
-                onFavRecivedListener.onFavRecived(mainListFav);
-            }
-
-            @Override
-            public void onCancelled(@NonNull DatabaseError databaseError) {
-
-            }
-        });
-    }
-    private void deleteFav (String key){
+    private void addFav(final NewPost newPost, final PostAdapter.ViewHolderData holder) {
         if (mAuth.getUid() == null) return;
-        DatabaseReference dRef = FirebaseDatabase.getInstance().getReference(MY_ACC_PATH);
-        dRef.child(mAuth.getUid()).child(MY_FAV_PATH).child(key).removeValue();
+        DatabaseReference dRef = FirebaseDatabase.getInstance().getReference(MAIN_ADS_PATH);
+
+        dRef.child(newPost.getKey()).child(FAV_ADS_PATH).child(mAuth.getUid()).child(USER_FAV_ID)
+                .setValue(mAuth.getUid()).addOnCompleteListener(new OnCompleteListener<Void>() {
+            @Override
+            public void onComplete(@NonNull Task<Void> task) {
+                if (task.isSuccessful()) {
+
+                    holder.imFav.setImageResource(R.drawable.ic_fav_select);
+                    newPost.setFav(true);
+                }
+            }
+        });
     }
 
-    public void  setOnFavRecivedListener(OnFavRecivedListener onFavRecivedListener){
-       this.onFavRecivedListener = onFavRecivedListener;
+    private void deleteFav(final NewPost newPost, final PostAdapter.ViewHolderData holder) {
+        if (mAuth.getUid() == null) return;
+        DatabaseReference dRef = FirebaseDatabase.getInstance().getReference(MAIN_ADS_PATH);
+        dRef.child(newPost.getKey()).child(FAV_ADS_PATH).child(mAuth.getUid()).removeValue()
+                .addOnCompleteListener(new OnCompleteListener<Void>() {
+                    @Override
+                    public void onComplete(@NonNull Task<Void> task) {
+                        if (task.isSuccessful()) {
+
+                            holder.imFav.setImageResource(R.drawable.ic_fav_not_select);
+                            newPost.setFav(false);
+                        }
+                    }
+                });
+    }
+
+    public String getMyAdsNode() {
+        return mAuth.getUid() + "/feedback/uid";
+    }
+
+    public String getMyFavAdsNode() {
+        return FAV_ADS_PATH + "/" + mAuth.getUid() + "/" + USER_FAV_ID;
     }
 }

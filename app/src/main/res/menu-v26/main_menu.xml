@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <item
+        android:id="@+id/private_policy"
+        android:icon="@drawable/ic_info"
+        android:orderInCategory="400"
+        android:title="@string/info_act"
+        app:showAsAction="ifRoom" />
+
+    <item
+        android:id="@+id/filter"
+        android:icon="@drawable/ic_filter"
+        android:orderInCategory="300"
+        android:title="@string/filter_act"
+        app:showAsAction="ifRoom" />
+
+    <item android:title="New"
+        android:id="@+id/new_ad"
+        android:icon="@drawable/ic_new_ad"
+        android:orderInCategory="200"
+        app:showAsAction="ifRoom" />
+
+    <item android:title="Search"
+        android:id="@+id/main_search"
+        app:actionViewClass="android.widget.SearchView"
+        android:orderInCategory="100"
+        app:showAsAction="ifRoom" />
+
+</menu>

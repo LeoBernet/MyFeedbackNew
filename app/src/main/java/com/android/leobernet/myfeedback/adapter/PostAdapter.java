@@ -7,6 +7,7 @@ import android.content.Intent;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
@@ -18,47 +19,78 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.android.leobernet.myfeedback.db.DbManager;
 import com.android.leobernet.myfeedback.EditActivity;
 import com.android.leobernet.myfeedback.MainActivity;
-import com.android.leobernet.myfeedback.db.FavPathItem;
 import com.android.leobernet.myfeedback.db.NewPost;
 import com.android.leobernet.myfeedback.R;
 import com.android.leobernet.myfeedback.ShowLayoutActivity;
-import com.android.leobernet.myfeedback.db.OnFavRecivedListener;
 import com.android.leobernet.myfeedback.utils.MyConstants;
+import com.google.firebase.auth.FirebaseUser;
 import com.squareup.picasso.Picasso;
 
-import java.util.ArrayList;
 import java.util.List;
 
-public class PostAdapter extends RecyclerView.Adapter<PostAdapter.ViewHolderData> implements OnFavRecivedListener {
+public class PostAdapter extends RecyclerView.Adapter<PostAdapter.ViewHolderData> {
 
-    public static final String TAG = "MyLog";
+    public static final String NEXT_PAGE = "nextPage";
+    public static final String BACK_PAGE = "backPage";
     private List<NewPost> mainPostList;
     private Context context;
     private OnItemClickCustom onItemClickCustom;
     private DbManager dbManager;
-    private List<FavPathItem> favList;
+    private int myViewType = 0;
+    private int VIEW_TYPE_ADS = 0;
+    private int VIEW_TYPE_END_BUTTON = 1;
+    public boolean isStartPage = true;
+    private final int NEXT_ADS_B = 1;
+    private final int BACK_ADS_B = 2;
+    private int adsButtonState = 0;
+    private boolean isTotalViewsAdded = false;
 
-    public PostAdapter(List<NewPost> arrayPost, Context context, OnItemClickCustom onItemClickCustom)
-    {
+    public PostAdapter(List<NewPost> arrayPost, Context context, OnItemClickCustom onItemClickCustom) {
         this.mainPostList = arrayPost;
         this.context = context;
         this.onItemClickCustom = onItemClickCustom;
-        favList = new ArrayList<>();
     }
 
     @NonNull
     @Override
     public ViewHolderData onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-        View view = LayoutInflater.from(context).inflate(R.layout.item_ads,parent,false);
-        return new ViewHolderData(view,onItemClickCustom);
+        View view;
+        if (viewType == VIEW_TYPE_END_BUTTON) {
+            view = LayoutInflater.from(context).inflate(R.layout.end_ads_item, parent, false);
+        } else {
+            view = LayoutInflater.from(context).inflate(R.layout.item_ads, parent, false);
+        }
+        return new ViewHolderData(view, onItemClickCustom);
 
     }
 
     @Override
     public void onBindViewHolder(@NonNull ViewHolderData holder, int position) {
 
-        holder.setData(mainPostList.get(position));
-        setFavIfSelected(holder);
+        switch (mainPostList.get(position).getUid()){
+
+            case NEXT_PAGE : holder.setNextItemData();
+
+                break;
+
+            case BACK_PAGE : holder.setBackItemData();
+
+                break;
+            default:
+                holder.setData(mainPostList.get(position));
+                setFavIfSelected(holder);
+                break;
+        }
+    }
+
+    @Override
+    public int getItemViewType(int position) {
+        if (mainPostList.get(position).getUid().equals(NEXT_PAGE)||mainPostList.get(position).getUid().equals(BACK_PAGE)){
+            myViewType = 1;
+        } else {
+            myViewType = 0;
+        }
+        return myViewType;
     }
 
     @Override
@@ -66,59 +98,79 @@ public class PostAdapter extends RecyclerView.Adapter<PostAdapter.ViewHolderData
         return mainPostList.size();
     }
 
-    @Override
-    public void onFavRecived(List<FavPathItem> items) {
-        favList.clear();
-        favList.addAll(items);
-        notifyDataSetChanged();
-    }
-
-
-    public class ViewHolderData extends RecyclerView.ViewHolder implements View.OnClickListener
-    {
-        public String favPath;
-        private TextView tvTitle,tvAddress,tvDisc,tvTotalViews;
+    public class ViewHolderData extends RecyclerView.ViewHolder implements View.OnClickListener {
+        private TextView tvTitle, tvAddress, tvDisc, tvTotalViews, tvName, tvFavCounter,tvHouseAddress;
         private ImageView imAds;
         private LinearLayout edit_layout;
-        private ImageButton deleteButton,editButton,imFav;
+        public ImageButton deleteButton, editButton, imFav;
         private OnItemClickCustom onItemClickCustom;
 
-        public ViewHolderData(@NonNull View itemView,OnItemClickCustom onItemClickCustom) {
+        public ViewHolderData(@NonNull View itemView, OnItemClickCustom onItemClickCustom) {
             super(itemView);
+            tvName = itemView.findViewById(R.id.tvName);
             tvTitle = itemView.findViewById(R.id.tvTitle1);
             tvTotalViews = itemView.findViewById(R.id.tvTotalViews);
             tvAddress = itemView.findViewById(R.id.tvAddressText);
             tvDisc = itemView.findViewById(R.id.tvDisc1);
+            tvHouseAddress = itemView.findViewById(R.id.tvHouseAddress);
             imAds = itemView.findViewById(R.id.imAds);
             edit_layout = itemView.findViewById(R.id.edit_layout);
             deleteButton = itemView.findViewById(R.id.imDeleteItem);
             editButton = itemView.findViewById(R.id.imEditItem);
             imFav = itemView.findViewById(R.id.imFav);
+            tvFavCounter = itemView.findViewById(R.id.tvFavCounter);
             this.onItemClickCustom = onItemClickCustom;
             itemView.setOnClickListener(this);
         }
 
+        public void setBackItemData() {
+            itemView.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+
+                    dbManager.getDataFromDb(((MainActivity) context)
+                            .current_cat, mainPostList.get(1).getTime(),true);
+
+                    ((MainActivity) context).rcView.scrollToPosition(0);
+                    adsButtonState = BACK_ADS_B;
+                }
+            });
+        }
+
+        public void setNextItemData() {
+            itemView.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+
+                    dbManager.getDataFromDb(((MainActivity) context)
+                            .current_cat, mainPostList.get(mainPostList.size() - 2).getTime(),false);
+
+                    ((MainActivity) context).rcView.scrollToPosition(0);
+                    isStartPage = false;
+                    adsButtonState = NEXT_ADS_B;
+                }
+            });
+        }
+
         public void setData(final NewPost newPost) {
-            if (newPost.getUid().equals(MainActivity.MAUTH))
-            {
-                edit_layout.setVisibility(View.VISIBLE);
-            }
-            else
-            {
-                edit_layout.setVisibility(View.GONE);
+            if (newPost == null) return;
+
+            FirebaseUser user = ((MainActivity) context).getmAuth().getCurrentUser();
+            if (user != null) {
+                edit_layout.setVisibility(newPost.getUid().equals(user.getUid()) ? View.VISIBLE : View.GONE);
+                imFav.setVisibility(user.isAnonymous() ? View.GONE : View.VISIBLE);
             }
             Picasso.get().load(newPost.getImageId()).into(imAds);
 
-            favPath = newPost.getCat() +"/" + newPost.getKey() +"/" + newPost.getUid() + "/" + "feedback";
-
             tvTitle.setText(newPost.getTitle());
+            tvFavCounter.setText(String.valueOf(newPost.getFavCounter()));
             tvAddress.setText(newPost.getAddress());
+            tvName.setText(newPost.getName());
+            tvHouseAddress.setText(newPost.getHouse());
             String textDisc;
             if (newPost.getDisc().length() > 80) {
-            textDisc = newPost.getDisc().substring(0,80) + "...";
-            }
-            else
-            {
+                textDisc = newPost.getDisc().substring(0, 80) + "...";
+            } else {
                 textDisc = newPost.getDisc();
             }
 
@@ -129,7 +181,7 @@ public class PostAdapter extends RecyclerView.Adapter<PostAdapter.ViewHolderData
                 @Override
                 public void onClick(View v) {
 
-                    deleteDialog(newPost,getAdapterPosition());
+                    deleteDialog(newPost, getAdapterPosition());
                 }
             });
 
@@ -138,8 +190,8 @@ public class PostAdapter extends RecyclerView.Adapter<PostAdapter.ViewHolderData
                 public void onClick(View v) {
 
                     Intent i = new Intent(context, EditActivity.class);
-                    i.putExtra(MyConstants.NEW_POST_INTENT,newPost);
-                    i.putExtra(MyConstants.EDIT_STATE,true);
+                    i.putExtra(MyConstants.NEW_POST_INTENT, newPost);
+                    i.putExtra(MyConstants.EDIT_STATE, true);
                     context.startActivity(i);
                 }
             });
@@ -148,33 +200,34 @@ public class PostAdapter extends RecyclerView.Adapter<PostAdapter.ViewHolderData
                 @Override
                 public void onClick(View v) {
 
-                    dbManager.updateFav(favPath);
-
+                    setFavCounter(newPost,tvFavCounter);
+                    dbManager.updateFav(newPost, ViewHolderData.this);
                 }
             });
         }
 
+        private void setFavCounter(NewPost newPost, TextView tvFavCounter){
+            int fCounter = Integer.parseInt(tvFavCounter.getText().toString());
+            fCounter = (newPost.isFav())? --fCounter : ++fCounter;
+            tvFavCounter.setText(String.valueOf(fCounter));
+        }
+
         @Override
-        public void onClick(View v)
-        {
+        public void onClick(View v) {
             NewPost newPost = mainPostList.get(getAdapterPosition());
-
-            dbManager.updateTotalViews(newPost);
-
+            dbManager.updateTotalCounter(DbManager.TOTAL_VIEWS,newPost.getKey(), newPost.getTotal_views());
             int totalViews = Integer.parseInt(newPost.getTotal_views());
             totalViews++;
             newPost.setTotal_views(String.valueOf(totalViews));
             Intent i = new Intent(context, ShowLayoutActivity.class);
-            i.putExtra(MyConstants.NEW_POST_INTENT,newPost);
-
+            i.putExtra(MyConstants.NEW_POST_INTENT, newPost);
             context.startActivity(i);
             onItemClickCustom.onItemSelected(getAdapterPosition());
         }
     }
 
-    private void deleteDialog (final NewPost newPost ,final int position)
-    {
-        AlertDialog.Builder builder = new AlertDialog.Builder(context,R.style.Theme_AppCompat_DayNight_Dialog_Alert);
+    private void deleteDialog(final NewPost newPost, final int position) {
+        AlertDialog.Builder builder = new AlertDialog.Builder(context, R.style.Theme_AppCompat_DayNight_Dialog_Alert);
         builder.setTitle(R.string.delete_title);
         builder.setMessage(R.string.delete_message);
         builder.setNegativeButton(R.string.no, new DialogInterface.OnClickListener() {
@@ -188,51 +241,65 @@ public class PostAdapter extends RecyclerView.Adapter<PostAdapter.ViewHolderData
             public void onClick(DialogInterface dialog, int which) {
 
                 dbManager.deleteItem(newPost);
-                    mainPostList.remove(position);
-                    notifyItemRemoved(position);
+                mainPostList.remove(position);
+                notifyItemRemoved(position);
             }
         });
         builder.show();
+
     }
 
-    public interface OnItemClickCustom
-    {
-       void onItemSelected(int position);
+    public interface OnItemClickCustom {
+        void onItemSelected(int position);
     }
-    public void updateAdapter(List<NewPost> listData)
-    {
+
+    public void updateAdapter(List<NewPost> listData) {
         mainPostList.clear();
+            if (!isStartPage && listData.size() == MyConstants.ADS_LIMIT || adsButtonState == NEXT_ADS_B && !isStartPage) {
+
+                NewPost tempPost = new NewPost();
+                tempPost.setUid(BACK_PAGE);
+                mainPostList.add(tempPost);
+
+            } else if (!isStartPage && listData.size() < MyConstants.ADS_LIMIT && adsButtonState == BACK_ADS_B) {
+                loadFirstPage();
+        }
+
+        if (listData.size() == MyConstants.ADS_LIMIT){
+
+            NewPost tempPost = new NewPost();
+            tempPost.setUid(NEXT_PAGE);
+            listData.add(tempPost);
+        }
         mainPostList.addAll(listData);
         notifyDataSetChanged();
-    }
-    public void setDbManager(DbManager dbManager)
-    {
-        this.dbManager = dbManager;
-        dbManager.setOnFavRecivedListener(this);
+        adsButtonState = 0;
     }
 
-    private void setFavIfSelected(ViewHolderData holder){
-        boolean isFav = false;
-        for (FavPathItem item: favList){
-            if(item.getFavPath().equals(holder.favPath)){
-                isFav = true;
-                break;
-            }
-        }
-        if (isFav){
+    private void loadFirstPage() {
+        isStartPage = true;
+        dbManager.getDataFromDb(((MainActivity) context).current_cat, "",false);
+    }
+
+    public void setDbManager(DbManager dbManager) {
+        this.dbManager = dbManager;
+    }
+
+    private void setFavIfSelected(ViewHolderData holder) {
+        if (mainPostList.get(holder.getAdapterPosition()).isFav()) {
             holder.imFav.setImageResource(R.drawable.ic_fav_select);
-        }else {
+        } else {
             holder.imFav.setImageResource(R.drawable.ic_fav_not_select);
         }
-            
-    }
-    public List<FavPathItem> getFavList()
-    {
-        return favList;
+
     }
 
-    public void clearAdapter(){
+    public void clearAdapter() {
         mainPostList.clear();
         notifyDataSetChanged();
+    }
+
+    public List<NewPost> getMainList() {
+        return mainPostList;
     }
 }

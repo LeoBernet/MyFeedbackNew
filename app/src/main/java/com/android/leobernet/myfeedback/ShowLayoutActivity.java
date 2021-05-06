@@ -5,6 +5,7 @@ import androidx.viewpager.widget.ViewPager;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.text.method.ScrollingMovementMethod;
 import android.widget.ImageView;
 import android.widget.TextView;
 
@@ -17,8 +18,7 @@ import java.util.List;
 
 public class ShowLayoutActivity extends AppCompatActivity {
 
-    private TextView tvTitle,tvAddress,tvDisc;
-    private ImageView imMain;
+    private TextView tvTitle,tvAddress,tvDisc,tvHouse;
     private List<String> imagesUris;
     private ImageAdapter imAdapter;
     private TextView tvImagesCounter;
@@ -57,18 +57,19 @@ public class ShowLayoutActivity extends AppCompatActivity {
         tvTitle = findViewById(R.id.tvTitle1);
         tvAddress = findViewById(R.id.tvAddress);
         tvDisc = findViewById(R.id.tvDisc1);
-        imMain = findViewById(R.id.imMain);
-        if (getIntent() != null) ;
-        {
+        tvHouse = findViewById(R.id.tvHouseAddress);
+
+        if (getIntent() != null) {
             Intent i =getIntent();
 
             assert i != null;
             NewPost newPost = (NewPost)i.getSerializableExtra(MyConstants.NEW_POST_INTENT);
 
-            if (newPost == null)return;
+            if (newPost == null) return;
             tvTitle.setText(newPost.getTitle());
             tvAddress.setText(newPost.getAddress());
             tvDisc.setText(newPost.getDisc());
+            tvHouse.setText(newPost.getHouse());
 
             String[] images = new String[3];
             images[0] = newPost.getImageId();

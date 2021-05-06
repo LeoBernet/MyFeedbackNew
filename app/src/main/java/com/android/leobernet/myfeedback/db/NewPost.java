@@ -6,15 +6,45 @@ public class NewPost implements Serializable {
     private String imageId;
     private String im_id2;
     private String im_id3;
+    private String country;
+    private String city;
+    private String address;
+    private String house;
     private String title;
     private String name;
-    private String address;
     private String disc;
     private String key;
     private String uid;
     private String time;
     private String cat;
-    private String total_views;
+    private String total_views = "0";
+
+    private long favCounter = 0;
+    private boolean isFav = false;
+
+    public String getHouse() {
+        return house;
+    }
+
+    public void setHouse(String house) {
+        this.house = house;
+    }
+
+    public String getCountry() {
+        return country;
+    }
+
+    public void setCountry(String country) {
+        this.country = country;
+    }
+
+    public String getCity() {
+        return city;
+    }
+
+    public void setCity(String city) {
+        this.city = city;
+    }
 
     public String getIm_id2() {
         return im_id2;
@@ -111,5 +141,21 @@ public class NewPost implements Serializable {
 
     public void setKey(String key) {
         this.key = key;
+    }
+
+    public long getFavCounter() {
+        return favCounter;
+    }
+
+    public void setFavCounter(long favCounter) {
+        this.favCounter = favCounter;
+    }
+
+    public boolean isFav() {
+        return isFav;
+    }
+
+    public void setFav(boolean fav) {
+        isFav = fav;
     }
 }

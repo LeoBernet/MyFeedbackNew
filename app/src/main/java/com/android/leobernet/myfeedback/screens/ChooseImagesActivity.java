@@ -95,14 +95,13 @@ public class ChooseImagesActivity extends AppCompatActivity {
                         isImagesLoaded = true;
                     }
                 });
-
             }
         };
     }
 
     public void onClickMainImage(View view) {
         if (!isImagesLoaded) {
-            Toast.makeText(this, "Изображение загружается, пожалуйста подождите...", Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, R.string.image_load, Toast.LENGTH_SHORT).show();
             return;
         }
         getImage(1);
@@ -110,7 +109,7 @@ public class ChooseImagesActivity extends AppCompatActivity {
 
     public void onClickImage2(View view) {
         if (!isImagesLoaded) {
-            Toast.makeText(this, "Изображение загружается, пожалуйста подождите...", Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, R.string.image_load, Toast.LENGTH_SHORT).show();
             return;
         }
         getImage(2);
@@ -118,7 +117,7 @@ public class ChooseImagesActivity extends AppCompatActivity {
 
     public void onClickImage3(View view) {
         if (!isImagesLoaded) {
-            Toast.makeText(this, "Изображение загружается, пожалуйста подождите...", Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, R.string.image_load, Toast.LENGTH_SHORT).show();
             return;
         }
         getImage(3);
@@ -192,17 +191,17 @@ public class ChooseImagesActivity extends AppCompatActivity {
     }
 
     public void onClickDeleteMainImage(View view) {
-        imMain.setImageResource(R.drawable.ic_add_photo);
+        imMain.setImageResource(R.drawable.add_photo_edit_activity);
         uris[0] = "empty";
     }
 
     public void onClickDeleteImage2(View view) {
-        im2.setImageResource(R.drawable.ic_add_photo);
+        im2.setImageResource(R.drawable.add_photo_edit_activity);
         uris[1] = "empty";
     }
 
     public void onClickDeleteImage3(View view) {
-        im3.setImageResource(R.drawable.ic_add_photo);
+        im3.setImageResource(R.drawable.add_photo_edit_activity);
         uris[2] = "empty";
     }
 }

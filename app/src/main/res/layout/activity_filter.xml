@@ -1,0 +1,117 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/niagara"
+    tools:context=".filter.FilterAct">
+
+    <TextView
+        android:id="@+id/tvSelectCountryTitle"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="16dp"
+        android:layout_marginTop="16dp"
+        android:text="@string/select_filter_country"
+        android:textColor="@color/black"
+        android:textSize="18sp"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <TextView
+        android:id="@+id/tvCountry"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="16dp"
+        android:onClick="onClickCountry"
+        android:text="@string/select_country_f_title"
+        android:textColor="@color/grey"
+        android:textSize="16sp"
+        app:layout_constraintStart_toStartOf="@+id/tvSelectCountryTitle"
+        app:layout_constraintTop_toBottomOf="@+id/tvSelectCountryTitle" />
+
+    <TextView
+        android:id="@+id/tvSelectCityTitle"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="16dp"
+        android:layout_marginTop="16dp"
+        android:text="@string/select_filter_city"
+        android:textColor="@color/black"
+        android:textSize="18sp"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/tvCountry" />
+
+    <TextView
+        android:id="@+id/tvCity"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="16dp"
+        android:onClick="onClickCity"
+        android:text="@string/select_city_f_title"
+        android:textColor="@color/grey"
+        android:textSize="16sp"
+        app:layout_constraintStart_toStartOf="@+id/tvSelectCountryTitle"
+        app:layout_constraintTop_toBottomOf="@+id/tvSelectCityTitle" />
+
+    <TextView
+        android:id="@+id/tvStreetAddress"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="16dp"
+        android:text="@string/select_address"
+        android:textColor="@color/black"
+        android:textSize="18sp"
+        app:layout_constraintStart_toStartOf="@+id/tvCity"
+        app:layout_constraintTop_toBottomOf="@+id/tvCity" />
+
+    <TextView
+        android:id="@+id/tvHouseAddress"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="16dp"
+        android:text="@string/select_house"
+        android:textColor="@color/black"
+        android:textSize="18sp"
+        app:layout_constraintStart_toStartOf="@+id/edStreetAddress"
+        app:layout_constraintTop_toBottomOf="@+id/edStreetAddress" />
+
+    <EditText
+        android:id="@+id/edStreetAddress"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="16dp"
+        android:ems="10"
+        android:hint="@string/select_address_hint"
+        android:inputType="textPersonName"
+        android:textColorHint="@color/grey"
+        app:layout_constraintStart_toStartOf="@+id/tvStreetAddress"
+        app:layout_constraintTop_toBottomOf="@+id/tvStreetAddress" />
+
+    <EditText
+        android:id="@+id/edHouseAddress"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="16dp"
+        android:ems="10"
+        android:hint="@string/select_house_hint"
+        android:inputType="textPersonName"
+        android:textColorHint="@color/grey"
+        app:layout_constraintStart_toStartOf="@+id/tvHouseAddress"
+        app:layout_constraintTop_toBottomOf="@+id/tvHouseAddress" />
+
+    <Button
+        android:id="@+id/bAddFilter"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="8dp"
+        android:layout_marginEnd="8dp"
+        android:layout_marginBottom="24dp"
+        android:backgroundTint="@color/white"
+        android:onClick="onClickAddFilter"
+        android:text="@string/use_filter"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent" />
+</androidx.constraintlayout.widget.ConstraintLayout>

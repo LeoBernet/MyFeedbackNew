@@ -3,45 +3,63 @@
     xmlns:tools="http://schemas.android.com/tools"
     tools:showIn="navigation_view">
     <group android:checkableBehavior="single">
-        <item android:title="@string/my_ads"
+        <item
             android:id="@+id/id_my_ads"
-            android:icon="@drawable/ic_my_ads"/>
-        <item android:title="@string/my_fav"
+            android:icon="@drawable/ic_my_ads"
+            android:title="@string/my_ads" />
+        <item
             android:id="@+id/id_fav"
-            android:icon="@drawable/ic_fav_select"/>
+            android:icon="@drawable/ic_fav_select"
+            android:title="@string/my_fav"
+            />
 
     </group>
-    <item android:title="@string/read_feed"
-        android:id="@+id/categoryAds">
+    <item
+        android:id="@+id/categoryAds"
+        android:title="@string/read_feed">
         <menu>
-        <item android:title="@string/good_car_ads"
-            android:id="@+id/id_good_car_ads"
-            android:icon="@drawable/ic_good_car_ads"/>
-        <item android:title="@string/normal_pc_ads"
-            android:id="@+id/id_normal_pc_ads"
-            android:icon="@drawable/ic_normal_pc_ads"/>
-        <item android:title="@string/bed_smartphone_ads"
-            android:id="@+id/id_bed_smartphone_ads"
-            android:icon="@drawable/ic_bed_smartphone_ads"/>
-        <item android:title="@string/verybed_dm_ads"
-            android:id="@+id/id_verybed_dm_ads"
-            android:icon="@drawable/ic_verybed_dm_ads"/>
+
+            <item
+                android:id="@+id/id_dif"
+                android:icon="@drawable/ic_review"
+                android:title="@string/different" />
+            <item
+                android:id="@+id/id_good_car_ads"
+                android:icon="@drawable/ic_good_car_ads"
+                android:title="@string/good_car_ads" />
+            <item
+                android:id="@+id/id_normal_pc_ads"
+                android:icon="@drawable/ic_normal_pc_ads"
+                android:title="@string/normal_pc_ads" />
+            <item
+                android:id="@+id/id_bed_smartphone_ads"
+                android:icon="@drawable/ic_bed_smartphone_ads"
+                android:title="@string/bed_smartphone_ads" />
+            <item
+                android:id="@+id/id_verybed_dm_ads"
+                android:icon="@drawable/ic_verybed_dm_ads"
+                android:title="@string/verybed_dm_ads" />
+
         </menu>
     </item>
 
-    <item android:title="@string/account"
-        android:id="@+id/accountCatId">
-<menu>
-    <item android:title="@string/sign_up"
-        android:id="@+id/id_sign_up"
-        android:icon="@drawable/ic_sign_up"/>
-    <item android:title="@string/sign_in"
-        android:id="@+id/id_sign_in"
-        android:icon="@drawable/ic_sign_in"/>
-    <item android:title="@string/sign_out"
-        android:id="@+id/id_sign_out"
-        android:icon="@drawable/ic_sign_out"/>
-</menu>
+    <item
+        android:id="@+id/accountCatId"
+        android:title="@string/account">
+        <menu>
+            <item
+                android:id="@+id/id_sign_up"
+                android:icon="@drawable/ic_sign_up"
+                android:title="@string/sign_up" />
+            <item
+                android:id="@+id/id_sign_in"
+                android:icon="@drawable/ic_sign_in"
+                android:title="@string/sign_in" />
+            <item
+                android:id="@+id/id_sign_out"
+                android:icon="@drawable/ic_sign_out"
+                android:title="@string/sign_out" />
+        </menu>
     </item>
 
 

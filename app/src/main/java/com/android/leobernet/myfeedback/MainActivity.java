@@ -6,12 +6,14 @@ import androidx.appcompat.app.ActionBarDrawerToggle;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
+import androidx.cardview.widget.CardView;
 import androidx.core.view.GravityCompat;
 import androidx.drawerlayout.widget.DrawerLayout;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.text.SpannableString;
 import android.text.style.ForegroundColorSpan;
@@ -21,7 +23,9 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ImageButton;
 import android.widget.ImageView;
+import android.widget.SearchView;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -31,6 +35,9 @@ import com.android.leobernet.myfeedback.adapter.DataSender;
 import com.android.leobernet.myfeedback.adapter.PostAdapter;
 import com.android.leobernet.myfeedback.db.DbManager;
 import com.android.leobernet.myfeedback.db.NewPost;
+import com.android.leobernet.myfeedback.filter.FilterAct;
+import com.android.leobernet.myfeedback.filter.FilterManager;
+import com.android.leobernet.myfeedback.utils.MyConstants;
 import com.google.android.gms.ads.AdRequest;
 import com.google.android.gms.ads.AdView;
 import com.google.android.gms.ads.MobileAds;
@@ -50,26 +57,30 @@ import java.util.Collections;
 import java.util.List;
 
 public class MainActivity extends AppCompatActivity implements
-        NavigationView.OnNavigationItemSelectedListener {
+        NavigationView.OnNavigationItemSelectedListener, SearchView.OnQueryTextListener {
 
 
     private NavigationView nav_view;
     private DrawerLayout drawerLayout;
     private FirebaseAuth mAuth;
-    private TextView userEmail;
+    private TextView userEmail,tvFilterInfo;
     private AlertDialog dialog;
     private Toolbar toolbar;
     private PostAdapter.OnItemClickCustom onItemClickCustom;
-    private RecyclerView rcView;
+    public RecyclerView rcView;
     private PostAdapter postAdapter;
     private DataSender dataSender;
     private DbManager dbManager;
     public static String MAUTH = "";
-    private String current_cat = "Хороший";
+    public String current_cat = MyConstants.DIF_CAT;
     private final int EDIT_RES = 15;
     private AdView adView;
     private AccountHelper accountHelper;
     private ImageView imPhoto;
+    private ImageButton imCloseFilter;
+    private MenuItem newAdItem,myAdsItem,myFavsItem;
+    private SharedPreferences pref;
+    private CardView filterHideContainer;
 
 
     @Override
@@ -78,23 +89,21 @@ public class MainActivity extends AppCompatActivity implements
         setContentView(R.layout.activity_main);
         addAds();
         init();
+        setOnScrollListener();
 
     }
 
     @Override
     protected void onResume() {
         super.onResume();
+        dbManager.onResume(pref);
         GoogleSignInAccount account = GoogleSignIn.getLastSignedInAccount(this);
         if (account != null) Picasso.get().load(account.getPhotoUrl()).into(imPhoto);
         if (adView != null) {
             adView.resume();
         }
-        if (current_cat.equals("my_ads")) {
-            dbManager.getMyAdsDataFromDb(mAuth.getUid());
-        } else {
-            dbManager.getDataFromDb(current_cat);
-        }
-
+            showFilterDialog();
+            dbManager.getDataFromDb(current_cat,"",false);
     }
 
     @Override
@@ -115,7 +124,10 @@ public class MainActivity extends AppCompatActivity implements
 
     private void init() {
 
-
+        pref = getSharedPreferences(MyConstants.MAIN_PREF,MODE_PRIVATE);
+        filterHideContainer = findViewById(R.id.filterHideLayout);
+        tvFilterInfo = findViewById(R.id.tvFilterInfo);
+        imCloseFilter = findViewById(R.id.imCloseFilter);
         setOnItemClickCustom();
         rcView = findViewById(R.id.rcView);
         rcView.setLayoutManager(new LinearLayoutManager(this));
@@ -124,9 +136,15 @@ public class MainActivity extends AppCompatActivity implements
         rcView.setAdapter(postAdapter);
 
         nav_view = findViewById(R.id.nav_view);
+        myAdsItem = nav_view.getMenu().findItem(R.id.id_my_ads);
+        myFavsItem = nav_view.getMenu().findItem(R.id.id_fav);
         drawerLayout = findViewById(R.id.drawerLayout);
         toolbar = findViewById(R.id.toolbar);
         toolbar.inflateMenu(R.menu.main_menu);
+        newAdItem = toolbar.getMenu().findItem(R.id.new_ad);
+        SearchView searchView = (SearchView) toolbar.getMenu().findItem(R.id.main_search).getActionView();
+        searchView.setOnQueryTextListener(this);
+
         onToolbarItemClick();
         ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
                 this, drawerLayout, toolbar, R.string.toggle_open, R.string.toggle_close);
@@ -156,8 +174,44 @@ public class MainActivity extends AppCompatActivity implements
         getDataDB();
         dbManager = new DbManager(dataSender, this);
         postAdapter.setDbManager(dbManager);
-        dbManager.readFavs();
 
+        imCloseFilter.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                FilterManager.clearFilter(pref);
+                filterHideContainer.setVisibility(View.GONE);
+            }
+        });
+    }
+
+    private void showFilterDialog(){
+        String filter = pref.getString(MyConstants.TEXT_FILTER,"empty");
+        String orderBy = pref.getString(MyConstants.ORDER_BY__FILTER,"empty");
+        if (filter.equals("empty")){
+            filterHideContainer.setVisibility(View.GONE);
+        }else{
+            filterHideContainer.setVisibility(View.VISIBLE);
+            tvFilterInfo.setText(FilterManager.getFilterText(filter));
+        }
+    }
+
+    private void setOnScrollListener(){
+        rcView.addOnScrollListener(new RecyclerView.OnScrollListener() {
+            @Override
+            public void onScrollStateChanged(@NonNull RecyclerView recyclerView, int newState) {
+                if (!rcView.canScrollVertically(1)){
+
+                 /* dbManager.getDataFromDb(current_cat,postAdapter.getMainList()
+                            .get(postAdapter.getMainList().size() -1).getTime());
+
+                  rcView.scrollToPosition(0);*/
+
+                }else if (!rcView.canScrollVertically(-1)){
+
+                }
+                super.onScrollStateChanged(recyclerView, newState);
+            }
+        });
     }
 
     private void getDataDB() {
@@ -166,7 +220,6 @@ public class MainActivity extends AppCompatActivity implements
             public void onDataRecived(List<NewPost> listData) {
                 Collections.reverse(listData);
                 postAdapter.updateAdapter(listData);
-
             }
         };
     }
@@ -221,21 +274,28 @@ public class MainActivity extends AppCompatActivity implements
     @Override
     protected void onStart() {
         super.onStart();
-        getUserData();
-
+        updateUI();
     }
 
-    public void getUserData() {
+    public void updateUI() {
         FirebaseUser currentUser = mAuth.getCurrentUser();
         if (currentUser != null) {
-            userEmail.setText(currentUser.getEmail());
+            if (currentUser.isAnonymous()) {
+                newAdItem.setVisible(false);
+                myFavsItem.setVisible(false);
+                myAdsItem.setVisible(false);
+                userEmail.setText(R.string.host);
+            }else{
+                newAdItem.setVisible(true);
+                myAdsItem.setVisible(true);
+                myFavsItem.setVisible(true);
+                userEmail.setText(currentUser.getEmail());
+            }
+
             MAUTH = mAuth.getUid();
-            dbManager.readFavs();
             onResume();
         } else {
-            userEmail.setText(R.string.sign_in_or_sign_up);
-            MAUTH = "";
-            postAdapter.clearAdapter();
+           accountHelper.Anonimous();
         }
     }
 
@@ -244,6 +304,7 @@ public class MainActivity extends AppCompatActivity implements
         int id = item.getItemId();
         final int id_my_ads = R.id.id_my_ads;
         final int id_my_fav = R.id.id_fav;
+        final int id_dif = R.id.id_dif;
         final int id_good_car_ads = R.id.id_good_car_ads;
         final int id_normal_pc_ads = R.id.id_normal_pc_ads;
         final int id_bed_smartphone_ads = R.id.id_bed_smartphone_ads;
@@ -251,30 +312,36 @@ public class MainActivity extends AppCompatActivity implements
         final int id_sign_up = R.id.id_sign_up;
         final int id_sign_in = R.id.id_sign_in;
         final int id_sign_out = R.id.id_sign_out;
+        postAdapter.isStartPage = true;
 
         switch (id) {
             case id_my_ads:
-                current_cat = "my_ads";
-                dbManager.getMyAdsDataFromDb(mAuth.getUid());
+                current_cat = MyConstants.MY_ADS;
+                dbManager.getMyAds(dbManager.getMyAdsNode());
                 break;
             case id_my_fav:
-                dbManager.readMyFav(postAdapter.getFavList());
+                current_cat = MyConstants.MY_FAVS;
+                dbManager.getMyAds(dbManager.getMyFavAdsNode());
+                break;
+            case id_dif:
+                current_cat = MyConstants.DIF_CAT;
+                dbManager.getDataFromDb(current_cat,"",false);
                 break;
             case id_good_car_ads:
-                current_cat = "Хороший";
-                dbManager.getDataFromDb("Хороший");
+                current_cat = getResources().getStringArray(R.array.category_spinner)[0];
+                dbManager.getDataFromDb(current_cat,"",false);
                 break;
             case id_normal_pc_ads:
-                current_cat = "Нормальный";
-                dbManager.getDataFromDb("Нормальный");
+                current_cat = getResources().getStringArray(R.array.category_spinner)[1];
+                dbManager.getDataFromDb(current_cat,"",false);
                 break;
             case id_bed_smartphone_ads:
-                current_cat = "Плохой";
-                dbManager.getDataFromDb("Плохой");
+                current_cat = getResources().getStringArray(R.array.category_spinner)[2];
+                dbManager.getDataFromDb(current_cat,"",false);
                 break;
             case id_verybed_dm_ads:
-                current_cat = "Ужасный";
-                dbManager.getDataFromDb("Ужасный");
+                current_cat = getResources().getStringArray(R.array.category_spinner)[3];
+                dbManager.getDataFromDb(current_cat,"",false);
                 break;
             case id_sign_up:
                 signUpDialog(R.string.sign_up, R.string.sign_up_button, R.string.google_sign_up, 0);
@@ -286,12 +353,10 @@ public class MainActivity extends AppCompatActivity implements
                 accountHelper.signOut();
                 imPhoto.setImageResource(android.R.color.transparent);
                 break;
-
         }
         drawerLayout.closeDrawer(GravityCompat.START);
         return true;
     }
-
 
     private void signUpDialog(int title, int buttonTitle, int b2Title, final int index) {
         AlertDialog.Builder dialogBuilder = new AlertDialog.Builder(this);
@@ -319,10 +384,18 @@ public class MainActivity extends AppCompatActivity implements
         signUpEmail.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if (index == 0) {
-                    accountHelper.signUp(edEmail.getText().toString(), edPassword.getText().toString());
-                } else {
-                    accountHelper.signIn(edEmail.getText().toString(), edPassword.getText().toString());
+                if (mAuth.getCurrentUser() != null) {
+                        if (mAuth.getCurrentUser().isAnonymous()){
+                            mAuth.getCurrentUser().delete().addOnCompleteListener(new OnCompleteListener<Void>() {
+                                @Override
+                                public void onComplete(@NonNull Task<Void> task) {
+                                    if (task.isSuccessful()){
+                                        if(index == 0)accountHelper.signUp(edEmail.getText().toString(), edPassword.getText().toString());
+                                        else accountHelper.signIn(edEmail.getText().toString(), edPassword.getText().toString());
+                                }
+                            }
+                        });
+                    }
                 }
                 dialog.dismiss();
             }
@@ -331,10 +404,14 @@ public class MainActivity extends AppCompatActivity implements
             @Override
             public void onClick(View v) {
                 if (mAuth.getCurrentUser() != null) {
-                    dialog.dismiss();
-                    return;
-                } else {
-                    accountHelper.signInGoogle(AccountHelper.GOOGLE_SIGN_IN_CODE);
+                   if(mAuth.getCurrentUser().isAnonymous()){
+                       mAuth.getCurrentUser().delete().addOnCompleteListener(new OnCompleteListener<Void>() {
+                           @Override
+                           public void onComplete(@NonNull Task<Void> task) {
+                               if(task.isSuccessful())accountHelper.signInGoogle(AccountHelper.GOOGLE_SIGN_IN_CODE);
+                           }
+                       });
+                   }
                 }
                 dialog.dismiss();
             }
@@ -351,9 +428,8 @@ public class MainActivity extends AppCompatActivity implements
                 forgetPassword.setText(R.string.send_reset_password);
                 tvMessage.setVisibility(View.VISIBLE);
                 tvMessage.setText(R.string.forget_password_message);
-            }
-                else
-                {
+
+            } else {
                     if (!edEmail.getText().toString().equals("")){
                     FirebaseAuth.getInstance().sendPasswordResetEmail(edEmail.getText().toString())
                             .addOnCompleteListener(new OnCompleteListener<Void>() {
@@ -365,21 +441,18 @@ public class MainActivity extends AppCompatActivity implements
                                     }
                                 }
                             });
-                    } else
-                    {
+                    } else {
                         Toast.makeText(MainActivity.this, R.string.email_is_empty, Toast.LENGTH_SHORT).show();
                     }
                 }
             }
         });
 
-
         dialog = dialogBuilder.create();
         //Код который убирает задний белый фон в Алерт диалоге.
         if (dialog.getWindow() != null) dialog.getWindow().setBackgroundDrawableResource(android.R.color.transparent);
         dialog.show();
     }
-
 
     private void addAds() {
         MobileAds.initialize(this);
@@ -401,11 +474,33 @@ public class MainActivity extends AppCompatActivity implements
                             accountHelper.showDialogNotVerified(R.string.alert, R.string.mail_not_verified);
                         }
                     }
+                }else if (item.getItemId() == R.id.filter){
+                    Intent i = new Intent(MainActivity.this , FilterAct.class);
+                    startActivity(i);
+                }else if (item.getItemId() == R.id.private_policy) {
+                    Intent i = new Intent(MainActivity.this, InfoAct.class);
+                    startActivity(i);
                 }
                 return false;
             }
         });
     }
 
+    public FirebaseAuth getmAuth() {
+        return mAuth;
+    }
 
+    @Override
+    public boolean onQueryTextSubmit(String query) {
+        //Это что бы искал по целому слову. Тогда снизу строчку нужно удалить из TextChange...
+        //dbManager.getSearchResult(query.toLowerCase());
+        return true;
+    }
+
+    @Override
+    public boolean onQueryTextChange(String newText) {
+        //Это что бы искал по каждой букве. Тогда сверху строчку нужно удалить из TextSubmit...
+        dbManager.getSearchResult(newText.toLowerCase());
+        return true;
+    }
 }

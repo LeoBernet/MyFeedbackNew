@@ -37,7 +37,6 @@ public class AccountHelper {
         this.activity = activity;
         googleAccountManager();
     }
-
     // Sign up by email.
 
     public void signUp(String email, String password) {
@@ -52,7 +51,7 @@ public class AccountHelper {
                                     FirebaseUser user = mAuth.getCurrentUser();
                                     sendEmailVerification(user);
                                 }
-                                activity.getUserData();
+                                activity.updateUI();
 
                             } else {
                                 FirebaseAuthUserCollisionException exception =
@@ -62,14 +61,11 @@ public class AccountHelper {
 
                                     linkEmailAndPassword(email, password);
                                 }
-
-
                             }
-
                         }
                     });
         } else {
-            Toast.makeText(activity, "Email или Password пустой!", Toast.LENGTH_SHORT).show();
+            Toast.makeText(activity, R.string.email_or_password_is_empty, Toast.LENGTH_SHORT).show();
         }
     }
 
@@ -80,24 +76,24 @@ public class AccountHelper {
                         @Override
                         public void onComplete(@NonNull Task<AuthResult> task) {
                             if (task.isSuccessful()) {
-                                activity.getUserData();
+                                activity.updateUI();
                             } else {
-                                Log.w("MyLog", "signInWithEmail:failure", task.getException());
-                                Toast.makeText(activity, "Authentication failed.",
+                                Toast.makeText(activity, R.string.authentication_failed,
                                         Toast.LENGTH_SHORT).show();
                             }
-
                         }
                     });
         } else {
-            Toast.makeText(activity, "Email или Password пустой!", Toast.LENGTH_SHORT).show();
+            Toast.makeText(activity, R.string.email_or_password_is_empty, Toast.LENGTH_SHORT).show();
         }
     }
 
     public void signOut() {
+        if (mAuth.getCurrentUser() == null)return;
+        if (mAuth.getCurrentUser().isAnonymous())return;
         mAuth.signOut();
         mSignInClient.signOut();
-        activity.getUserData();
+        activity.updateUI();
     }
 
     private void sendEmailVerification(FirebaseUser user) {
@@ -110,7 +106,6 @@ public class AccountHelper {
             }
         });
     }
-
     //Sign in by Google
 
     private void googleAccountManager() {
@@ -131,9 +126,9 @@ public class AccountHelper {
             @Override
             public void onComplete(@NonNull Task<AuthResult> task) {
                 if (task.isSuccessful()) {
-                    Toast.makeText(activity, "Вы вошли", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(activity, R.string.you_enter, Toast.LENGTH_SHORT).show();
                     if (index == 1)linkEmailAndPassword(tempEmail,tempPassword);
-                    activity.getUserData();
+                    activity.updateUI();
                 } else {
 
                 }
@@ -150,7 +145,6 @@ public class AccountHelper {
             @Override
             public void onClick(DialogInterface dialog, int which) {
                 signInGoogle(GOOGLE_SIGN_IN_LINK_CODE);
-
             }
         });
         builder.create();
@@ -178,14 +172,12 @@ public class AccountHelper {
             @Override
             public void onClick(DialogInterface dialog, int which) {
                 signOut();
-
             }
         });
         builder.setNegativeButton(R.string.send_email_again, new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which) {
-                if (mAuth.getCurrentUser() != null)
-                {
+                if (mAuth.getCurrentUser() != null) {
                 sendEmailVerification(mAuth.getCurrentUser());
                 }
 
@@ -195,8 +187,7 @@ public class AccountHelper {
         builder.show();
     }
 
-    private void linkEmailAndPassword(String email,String password)
-    {
+    private void linkEmailAndPassword(String email,String password) {
         AuthCredential credential = EmailAuthProvider.getCredential(email, password);
         if (mAuth.getCurrentUser() != null){
         mAuth.getCurrentUser().linkWithCredential(credential)
@@ -207,24 +198,29 @@ public class AccountHelper {
                         {
                             Toast.makeText(activity, R.string.account_lincked, Toast.LENGTH_SHORT).show();
                             if (task.getResult() == null)return;
-                            activity.getUserData();
+                            activity.updateUI();
                         } else {
 
-                            Toast.makeText(activity, "Authentication failed.",
+                            Toast.makeText(activity, R.string.auth_field,
                                     Toast.LENGTH_SHORT).show();
                         }
-
                     }
                 });
-
-    }
-        else
-        {
+    }else{
 
             tempEmail = email;
             tempPassword = password;
             showDialogSignInWithLink(R.string.alert,R.string.sign_link_message);
-
         }
+    }
+    public void Anonimous(){
+        mAuth.signInAnonymously().addOnCompleteListener(new OnCompleteListener<AuthResult>() {
+            @Override
+            public void onComplete(@NonNull Task<AuthResult> task) {
+                if (task.isSuccessful()){
+                    activity.updateUI();
+                }
+            }
+        });
     }
 }

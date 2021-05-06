@@ -4,7 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:backgroundTint="#FFFFFF"
+    android:background="@color/niagara"
     tools:context=".screens.ChooseImagesActivity">
 
     <com.google.android.material.floatingactionbutton.FloatingActionButton
@@ -57,7 +57,7 @@
                 android:layout_marginStart="7dp"
                 android:layout_marginTop="7dp"
                 android:background="@drawable/header_text_bg"
-                android:padding="5dp"
+                android:padding="4dp"
                 android:text="@string/main_image"
                 android:textColor="@color/grey"
                 android:textSize="14sp"
@@ -72,9 +72,11 @@
                 android:layout_marginEnd="7dp"
                 android:background="@drawable/header_text_bg"
                 android:onClick="onClickDeleteMainImage"
-                android:src="@android:drawable/ic_menu_delete"
+                android:padding="3dp"
+                android:src="@drawable/ic_menu_delete"
                 app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintTop_toTopOf="parent" />
+                app:layout_constraintTop_toTopOf="parent"
+                tools:src="@drawable/ic_menu_delete" />
         </androidx.constraintlayout.widget.ConstraintLayout>
 
         <androidx.constraintlayout.widget.ConstraintLayout
@@ -104,7 +106,7 @@
                 android:layout_marginStart="7dp"
                 android:layout_marginTop="7dp"
                 android:background="@drawable/header_text_bg"
-                android:padding="5dp"
+                android:padding="4dp"
                 android:text="@string/image2"
                 android:textColor="@color/grey"
                 android:textSize="14sp"
@@ -119,9 +121,11 @@
                 android:layout_marginEnd="7dp"
                 android:background="@drawable/header_text_bg"
                 android:onClick="onClickDeleteImage2"
-                android:src="@android:drawable/ic_menu_delete"
+                android:padding="3dp"
+                android:src="@drawable/ic_menu_delete"
                 app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintTop_toTopOf="parent" />
+                app:layout_constraintTop_toTopOf="parent"
+                tools:src="@drawable/ic_menu_delete" />
         </androidx.constraintlayout.widget.ConstraintLayout>
 
         <androidx.constraintlayout.widget.ConstraintLayout
@@ -151,7 +155,7 @@
                 android:layout_marginStart="7dp"
                 android:layout_marginTop="7dp"
                 android:background="@drawable/header_text_bg"
-                android:padding="5dp"
+                android:padding="4dp"
                 android:text="@string/image3"
                 android:textColor="@color/grey"
                 android:textSize="14sp"
@@ -166,9 +170,11 @@
                 android:layout_marginEnd="7dp"
                 android:background="@drawable/header_text_bg"
                 android:onClick="onClickDeleteImage3"
-                android:src="@android:drawable/ic_menu_delete"
+                android:padding="3dp"
+                android:src="@drawable/ic_menu_delete"
                 app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintTop_toTopOf="parent" />
+                app:layout_constraintTop_toTopOf="parent"
+                tools:src="@drawable/ic_menu_delete" />
         </androidx.constraintlayout.widget.ConstraintLayout>
 
     </LinearLayout>

@@ -3,12 +3,13 @@ package com.android.leobernet.myfeedback;
 import android.app.ProgressDialog;
 import android.content.Intent;
 import android.graphics.Bitmap;
+import android.graphics.Paint;
 import android.net.Uri;
 import android.os.Bundle;
+import android.text.TextUtils;
 import android.view.View;
 import android.widget.ArrayAdapter;
-import android.widget.EditText;
-import android.widget.Spinner;
+import android.widget.CheckBox;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -18,9 +19,15 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.viewpager.widget.ViewPager;
 
 import com.android.leobernet.myfeedback.adapter.ImageAdapter;
+import com.android.leobernet.myfeedback.databinding.EditLayoutBinding;
 import com.android.leobernet.myfeedback.db.DbManager;
 import com.android.leobernet.myfeedback.db.NewPost;
+import com.android.leobernet.myfeedback.status.StatusItem;
+import com.android.leobernet.myfeedback.info.PrivatePolicy;
 import com.android.leobernet.myfeedback.screens.ChooseImagesActivity;
+import com.android.leobernet.myfeedback.status.StatusManager;
+import com.android.leobernet.myfeedback.utils.CountryManager;
+import com.android.leobernet.myfeedback.utils.DialogHelper;
 import com.android.leobernet.myfeedback.utils.ImagesManager;
 import com.android.leobernet.myfeedback.utils.MyConstants;
 import com.android.leobernet.myfeedback.utils.OnBitmapLoaded;
@@ -42,14 +49,14 @@ import java.util.List;
 
 public class EditActivity extends AppCompatActivity implements OnBitmapLoaded {
 
+
+    private EditLayoutBinding rootElement;
     private final int MAX_UPLOAD_IMAGE_SIZE = 1920;
     private StorageReference mStorageRef;
     private String[] uploadUri = new String[3];
     private String[] uploadNewUri = new String[3];
-    private Spinner spinner;
     private DatabaseReference dRef;
     private FirebaseAuth mAuth;
-    private EditText edTitle, edName, edAddress, edDisc;
     private boolean edit_state = false;
     private String temp_cat = "";
     private String temp_uid = "";
@@ -61,30 +68,30 @@ public class EditActivity extends AppCompatActivity implements OnBitmapLoaded {
     private int load_image_counter = 0;
     private List<String> imagesUris;
     private ImageAdapter imAdapter;
-    private TextView tvImagesCounter;
-    private ViewPager vp;
     private List<Bitmap> bitmapArrayList;
     private ImagesManager imagesManager;
     private boolean isImagesLoaded = false;
 
-
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.edit_layout);
+        rootElement = EditLayoutBinding.inflate(getLayoutInflater());
+        setContentView(rootElement.getRoot());
         init();
     }
 
     private void init() {
 
+        //подчеркивает весь текст
+        TextView textView = (TextView) findViewById(R.id.discRules);
+        textView.setPaintFlags(textView.getPaintFlags() | Paint.UNDERLINE_TEXT_FLAG);
+
         imagesManager = new ImagesManager(this, this);
-        tvImagesCounter = findViewById(R.id.tvImagesCounter);
         imagesUris = new ArrayList<>();
         bitmapArrayList = new ArrayList<>();
-        vp = findViewById(R.id.view_pager);
         imAdapter = new ImageAdapter(this);
-        vp.setAdapter(imAdapter);
-        vp.addOnPageChangeListener(new ViewPager.OnPageChangeListener() {
+        rootElement.viewPager.setAdapter(imAdapter);
+        rootElement.viewPager.addOnPageChangeListener(new ViewPager.OnPageChangeListener() {
             @Override
             public void onPageScrolled(int position, float positionOffset, int positionOffsetPixels) {
 
@@ -94,7 +101,7 @@ public class EditActivity extends AppCompatActivity implements OnBitmapLoaded {
             public void onPageSelected(int position) {
 
                 String dataText = position + 1 + "/" + imagesUris.size();
-                tvImagesCounter.setText(dataText);
+                rootElement.tvImagesCounter.setText(dataText);
             }
 
             @Override
@@ -108,17 +115,14 @@ public class EditActivity extends AppCompatActivity implements OnBitmapLoaded {
         uploadUri[2] = "empty";
 
         pd = new ProgressDialog(this);
-        pd.setMessage("Идёт загрузка...");
-        edTitle = findViewById(R.id.edTittle);
-        edName = findViewById(R.id.edName);
-        edAddress = findViewById(R.id.edAddress);
-        edDisc = findViewById(R.id.edDisc);
 
-        spinner = findViewById(R.id.spinner);
+        // если что удалить эту часть this.getResources().getString
+        pd.setMessage(this.getResources().getString(R.string.loading));
+
         ArrayAdapter<CharSequence> adapter = ArrayAdapter.createFromResource
                 (this, R.array.category_spinner, android.R.layout.simple_spinner_item);
         adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-        spinner.setAdapter(adapter);
+        rootElement.spinner.setAdapter(adapter);
         mStorageRef = FirebaseStorage.getInstance().getReference("Images");
         getMyIntent();
     }
@@ -128,19 +132,19 @@ public class EditActivity extends AppCompatActivity implements OnBitmapLoaded {
             Intent i = getIntent();
             edit_state = i.getBooleanExtra(MyConstants.EDIT_STATE, false);
             if (edit_state) setDataAds(i);
-
         }
     }
 
     private void setDataAds(Intent i) {
         // Picasso.get().load(i.getStringExtra(MyConstants.IMAGE_ID)).into(imItem);
         NewPost newPost = (NewPost) i.getSerializableExtra(MyConstants.NEW_POST_INTENT);
-        if (newPost == null)return;
+        if (newPost == null) return;
 
-        edTitle.setText(newPost.getTitle());
-        edName.setText(newPost.getName());
-        edAddress.setText(newPost.getAddress());
-        edDisc.setText(newPost.getDisc());
+        rootElement.edTittle.setText(newPost.getTitle());
+        rootElement.edName.setText(newPost.getName());
+        rootElement.edAddress.setText(newPost.getAddress());
+        rootElement.edDisc.setText(newPost.getDisc());
+
         temp_cat = newPost.getCat();
         temp_uid = newPost.getUid();
         temp_time = newPost.getTime();
@@ -163,8 +167,7 @@ public class EditActivity extends AppCompatActivity implements OnBitmapLoaded {
         } else {
             dataText = 0 + "/" + imagesUris.size();
         }
-        tvImagesCounter.setText(dataText);
-
+        rootElement.tvImagesCounter.setText(dataText);
     }
 
     private void uploadImage() {
@@ -174,11 +177,10 @@ public class EditActivity extends AppCompatActivity implements OnBitmapLoaded {
             if (!uploadUri[load_image_counter].equals("empty")) {
                 Bitmap bitMap = bitmapArrayList.get(load_image_counter);
 
-
                 ByteArrayOutputStream out = new ByteArrayOutputStream();
                 assert bitMap != null;
 
-                bitMap.compress(Bitmap.CompressFormat.JPEG, 20, out);
+                bitMap.compress(Bitmap.CompressFormat.JPEG, 40, out);
                 byte[] byteArray = out.toByteArray();
                 final StorageReference mRef = mStorageRef
                         .child(System.currentTimeMillis() + "_image");
@@ -197,9 +199,9 @@ public class EditActivity extends AppCompatActivity implements OnBitmapLoaded {
                         if (load_image_counter < uploadUri.length) {
                             uploadImage();
                         } else {
-                            savePost();
+                            publishPost();
                             Toast.makeText(EditActivity.this,
-                                    "Фото загружено!",
+                                    R.string.photo_uploaded,
                                     Toast.LENGTH_SHORT).show();
                             finish();
                         }
@@ -207,7 +209,6 @@ public class EditActivity extends AppCompatActivity implements OnBitmapLoaded {
                 }).addOnFailureListener(new OnFailureListener() {
                     @Override
                     public void onFailure(@NonNull Exception e) {
-
                     }
                 });
             } else {
@@ -215,7 +216,7 @@ public class EditActivity extends AppCompatActivity implements OnBitmapLoaded {
                 uploadImage();
             }
         } else {
-            savePost();
+            publishPost();
             finish();
         }
     }
@@ -252,18 +253,15 @@ public class EditActivity extends AppCompatActivity implements OnBitmapLoaded {
                         if (load_image_counter < uploadUri.length) {
                             uploadUpdateImage();
                         } else {
-                            updatePost();
+                            publishPost();
                         }
-
                     }
                 });
-
             }
-
 
             if (bitMap == null) return;
             ByteArrayOutputStream out = new ByteArrayOutputStream();
-            bitMap.compress(Bitmap.CompressFormat.JPEG, 30, out);
+            bitMap.compress(Bitmap.CompressFormat.JPEG, 40, out);
             byte[] byteArray = out.toByteArray();
             final StorageReference mRef;
 
@@ -274,7 +272,6 @@ public class EditActivity extends AppCompatActivity implements OnBitmapLoaded {
                 //2 - B Если ссылка на старой позиции равна empty то записываем новую картинку на firebase storage
                 mRef = mStorageRef.child(System.currentTimeMillis() + "_image");
             }
-
 
             UploadTask up = mRef.putBytes(byteArray);
             Task<Uri> task = up.continueWithTask(new Continuation<UploadTask.TaskSnapshot, Task<Uri>>() {
@@ -291,10 +288,8 @@ public class EditActivity extends AppCompatActivity implements OnBitmapLoaded {
                     if (load_image_counter < uploadUri.length) {
                         uploadUpdateImage();
                     } else {
-                        updatePost();
+                        publishPost();
                     }
-
-
                 }
             }).addOnFailureListener(new OnFailureListener() {
                 @Override
@@ -304,12 +299,15 @@ public class EditActivity extends AppCompatActivity implements OnBitmapLoaded {
             });
         } else {
 
-            updatePost();
+            publishPost();
         }
-
     }
 
     public void onClickSavePost(View view) {
+        if (!isFieldEmpty()){
+            Toast.makeText(this, R.string.empty_field_error, Toast.LENGTH_LONG).show();
+            return;
+        }
         if (isImagesLoaded) {
             pd.show();
             if (!edit_state) {
@@ -318,15 +316,30 @@ public class EditActivity extends AppCompatActivity implements OnBitmapLoaded {
                 if (is_image_update) {
                     uploadUpdateImage();
                 } else {
-                    updatePost();
+                    publishPost();
                 }
             }
-        }else
-        {
-            Toast.makeText(this, "Пожалуйста подождите, изображение загружается...", Toast.LENGTH_SHORT).show();
+        } else {
+            Toast.makeText(this, R.string.image_load, Toast.LENGTH_SHORT).show();
         }
+    }
+
+    private boolean isFieldEmpty() {
+
+        String country = rootElement.tvSelectCountry.getText().toString();
+        String city = rootElement.tvSelectCitty.getText().toString();
+        String address = rootElement.edAddress.getText().toString();
+        String title = rootElement.edTittle.getText().toString();
+        String disc = rootElement.edDisc.getText().toString();
+        String house = rootElement.edHouseAddress.getText().toString();
+        CheckBox checkBox = rootElement.editCheckBox;
 
 
+        return(!getString(R.string.select_country).equals(country)
+                && !getString(R.string.select_city).equals(city)
+                && !TextUtils.isEmpty(address) && !TextUtils.isEmpty(title)
+                && !TextUtils.isEmpty(disc)&& !TextUtils.isEmpty(house)
+                && checkBox.isChecked());
     }
 
     @Override
@@ -346,11 +359,11 @@ public class EditActivity extends AppCompatActivity implements OnBitmapLoaded {
                 imAdapter.updateImages(imagesUris);
                 String dataText;
                 if (imagesUris.size() > 0) {
-                    dataText = vp.getCurrentItem() + 1 + "/" + imagesUris.size();
+                    dataText = rootElement.viewPager.getCurrentItem() + 1 + "/" + imagesUris.size();
                 } else {
                     dataText = 0 + "/" + imagesUris.size();
                 }
-                tvImagesCounter.setText(dataText);
+                rootElement.tvImagesCounter.setText(dataText);
             }
         }
     }
@@ -370,7 +383,6 @@ public class EditActivity extends AppCompatActivity implements OnBitmapLoaded {
             uploadUri[2] = data.getStringExtra("uri3");
             return uploadUri;
         }
-
     }
 
     public void onClickImage(View view) {
@@ -381,62 +393,69 @@ public class EditActivity extends AppCompatActivity implements OnBitmapLoaded {
         startActivityForResult(i, 15);
     }
 
-
-    private void updatePost() {
+    private void publishPost() {
         mAuth = FirebaseAuth.getInstance();
-        if (mAuth.getUid() != null) {
-            dRef = FirebaseDatabase.getInstance().getReference(DbManager.MY_ADS_PATH);
-            NewPost post = new NewPost();
-            post.setImageId(uploadUri[0]);
-            post.setIm_id2(uploadUri[1]);
-            post.setIm_id3(uploadUri[2]);
-            post.setTitle(edTitle.getText().toString());
-            post.setName(edName.getText().toString());
-            post.setAddress(edAddress.getText().toString());
-            post.setDisc(edDisc.getText().toString());
-            post.setKey(temp_key);
-            post.setCat(temp_cat);
-            post.setTime(temp_time);
-            post.setUid(temp_uid);
-            post.setTotal_views(temp_total_views);
-            dRef.child(temp_key).child(mAuth.getUid()).child("feedback").setValue(post)
-                    .addOnCompleteListener(new OnCompleteListener<Void>() {
-                        @Override
-                        public void onComplete(@NonNull Task<Void> task) {
-                            Toast.makeText(EditActivity.this,
-                                    "Отзыв загружен!",
-                                    Toast.LENGTH_SHORT).show();
-                            finish();
-                        }
-                    });
+        dRef = FirebaseDatabase.getInstance().getReference(DbManager.MAIN_ADS_PATH);
+
+        NewPost post = new NewPost();
+        post.setImageId(uploadUri[0]);
+        post.setIm_id2(uploadUri[1]);
+        post.setIm_id3(uploadUri[2]);
+
+        post.setCountry(rootElement.tvSelectCountry.getText().toString());
+        post.setCity(rootElement.tvSelectCitty.getText().toString());
+        post.setAddress(rootElement.edAddress.getText().toString());
+        post.setTitle(rootElement.edTittle.getText().toString());
+        post.setName(rootElement.edName.getText().toString());
+        post.setDisc(rootElement.edDisc.getText().toString());
+        post.setHouse(rootElement.edHouseAddress.getText().toString());
+
+        if (edit_state) {
+            updatePost(post);
+        } else {
+            savePost(post);
         }
     }
 
-    private void savePost() {
-        dRef = FirebaseDatabase.getInstance().getReference(DbManager.MY_ADS_PATH);
-        mAuth = FirebaseAuth.getInstance();
-        if (mAuth.getUid() != null) {
-            String key = dRef.push().getKey();
-            NewPost post = new NewPost();
+    private void updatePost(NewPost post) {
 
-            post.setImageId(uploadUri[0]);
-            post.setIm_id2(uploadUri[1]);
-            post.setIm_id3(uploadUri[2]);
-            post.setTitle(edTitle.getText().toString());
-            post.setName(edName.getText().toString());
-            post.setAddress(edAddress.getText().toString());
-            post.setDisc(edDisc.getText().toString());
-            post.setKey(key);
-            post.setCat(spinner.getSelectedItem().toString());
-            post.setTime(String.valueOf(System.currentTimeMillis()));
-            post.setUid(mAuth.getUid());
-            post.setTotal_views("0");
+        if (mAuth.getUid() == null) return;
+        post.setKey(temp_key);
+        post.setCat(temp_cat);
+        post.setTime(temp_time);
+        post.setUid(temp_uid);
+        post.setTotal_views(temp_total_views);
+        dRef.child(temp_key).child("status").setValue(StatusManager.fillStatusItem(post));
+        dRef.child(temp_key).child(mAuth.getUid()).child("feedback").setValue(post)
+                .addOnCompleteListener(new OnCompleteListener<Void>() {
+                    @Override
+                    public void onComplete(@NonNull Task<Void> task) {
+                        Toast.makeText(EditActivity.this,
+                                R.string.feedback_loaded,
+                                Toast.LENGTH_SHORT).show();
+                        finish();
+                    }
+                });
+    }
 
-            if (key != null) dRef.child(key).child(mAuth.getUid()).child("feedback").setValue(post);
-            Intent i = new Intent();
-            i.putExtra("cat", spinner.getSelectedItem().toString());
-            setResult(RESULT_OK, i);
+    private void savePost(NewPost post) {
+
+        if (mAuth.getUid() == null) return;
+        String key = dRef.push().getKey();
+        post.setKey(key);
+        post.setCat(rootElement.spinner.getSelectedItem().toString());
+        post.setTime(String.valueOf(System.currentTimeMillis()));
+        post.setUid(mAuth.getUid());
+        post.setTotal_views("0");
+
+        if (key != null) {
+
+            dRef.child(key).child(mAuth.getUid()).child("feedback").setValue(post);
+            dRef.child(key).child("status").setValue(StatusManager.fillStatusItem(post));
         }
+        Intent i = new Intent();
+        i.putExtra("cat", rootElement.spinner.getSelectedItem().toString());
+        setResult(RESULT_OK, i);
     }
 
     @Override
@@ -455,6 +474,33 @@ public class EditActivity extends AppCompatActivity implements OnBitmapLoaded {
                 isImagesLoaded = true;
             }
         });
+    }
 
+    public void onClickPrivatePolicy(View view){
+        Intent intent = new Intent(EditActivity.this, PrivatePolicy.class);
+        startActivity(intent);
+    }
+
+    public void onClickSetCountry(View view) {
+        String city = rootElement.tvSelectCitty.getText().toString();
+        if (!city.equals(getString(R.string.select_city))) {
+            rootElement.tvSelectCitty.setText(R.string.select_city);
+        }
+        DialogHelper.INSTANCE.showDialog(this, CountryManager.INSTANCE.getAllCountries(this), (TextView) view);
+    }
+
+    public void onClickSetCity(View view) {
+        String country = rootElement.tvSelectCountry.getText().toString();
+        if (!country.equals(getString(R.string.select_country))) {
+
+            DialogHelper.INSTANCE.showDialog(this, CountryManager.INSTANCE.getAllCities(this, country), (TextView) view);
+
+        } else {
+            Toast.makeText(this, R.string.first_country, Toast.LENGTH_SHORT).show();
+        }
+    }
+
+    public EditLayoutBinding getRootElement() {
+        return rootElement;
     }
 }

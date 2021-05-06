@@ -30,9 +30,9 @@
         android:id="@+id/imAds"
         android:layout_width="0dp"
         android:layout_height="250dp"
-        android:layout_marginStart="11dp"
-        android:layout_marginTop="8dp"
-        android:layout_marginEnd="11dp"
+        android:layout_marginStart="5dp"
+        android:layout_marginTop="2dp"
+        android:layout_marginEnd="5dp"
         android:background="@drawable/image_def_bg"
         android:scaleType="centerCrop"
         app:layout_constraintBottom_toTopOf="@+id/tvAddressText"
@@ -46,10 +46,10 @@
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_marginStart="5dp"
-        android:layout_marginTop="8dp"
+        android:layout_marginTop="5dp"
         android:layout_marginEnd="5dp"
         android:gravity="center"
-        android:padding="10dp"
+        android:padding="5dp"
         android:text="TextView"
         android:textColor="@color/grey"
         android:textStyle="bold"
@@ -58,30 +58,42 @@
         app:layout_constraintTop_toBottomOf="@+id/imAds" />
 
     <TextView
+        android:id="@+id/tvHouseAddress"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="5dp"
+        android:layout_marginEnd="5dp"
+        android:gravity="center"
+        android:text="TextView"
+        android:textColor="@color/grey"
+        android:textStyle="bold"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/tvAddressText" />
+
+    <TextView
         android:id="@+id/tvDisc1"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:layout_marginTop="5dp"
+        android:layout_marginTop="2dp"
         android:gravity="center"
+        android:lines="3"
+        android:maxLines="3"
         android:padding="10dp"
         android:text="TextView"
         android:textColor="@color/grey"
         android:textStyle="italic"
-        android:maxLines="3"
-        android:lines="3"
         app:layout_constraintEnd_toEndOf="@+id/tvAddressText"
         app:layout_constraintStart_toStartOf="@+id/tvAddressText"
-        app:layout_constraintTop_toBottomOf="@+id/tvAddressText" />
+        app:layout_constraintTop_toBottomOf="@+id/tvHouseAddress" />
 
     <androidx.constraintlayout.widget.ConstraintLayout
         android:id="@+id/edit_panel_layout"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/tvDisc1"
-        app:layout_constraintVertical_bias="0.0">
+        app:layout_constraintTop_toBottomOf="@+id/tvDisc1">
 
         <ImageView
             android:id="@+id/imageView2"
@@ -100,6 +112,7 @@
             android:layout_height="wrap_content"
             android:layout_marginStart="8dp"
             android:text="0"
+            android:textColor="@color/grey"
             android:textSize="18sp"
             app:layout_constraintBottom_toBottomOf="@+id/imageView2"
             app:layout_constraintStart_toEndOf="@+id/imageView2"
@@ -109,8 +122,8 @@
             android:id="@+id/edit_layout"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:orientation="horizontal"
             android:layout_marginTop="5dp"
+            android:orientation="horizontal"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintTop_toTopOf="parent">
@@ -121,8 +134,8 @@
                 android:layout_height="wrap_content"
                 android:layout_marginEnd="15dp"
                 android:background="@drawable/header_text_bg"
-                android:padding="2dp"
-                app:srcCompat="@android:drawable/ic_menu_edit" />
+                android:padding="3dp"
+                app:srcCompat="@drawable/ic_edit_images" />
 
             <ImageButton
                 android:id="@+id/imDeleteItem"
@@ -131,8 +144,8 @@
                 android:layout_marginRight="5dp"
                 android:layout_marginBottom="5dp"
                 android:background="@drawable/header_text_bg_white"
-                android:padding="2dp"
-                app:srcCompat="@android:drawable/ic_menu_delete" />
+                android:padding="3dp"
+                app:srcCompat="@drawable/ic_menu_delete" />
 
         </LinearLayout>
 
@@ -146,5 +159,35 @@
             app:layout_constraintStart_toEndOf="@+id/tvTotalViews"
             app:layout_constraintTop_toTopOf="@+id/imageView2"
             app:srcCompat="@drawable/ic_fav_not_select" />
+
+        <TextView
+            android:id="@+id/tvFavCounter"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="8dp"
+            android:text="0"
+            android:textColor="@color/grey"
+            android:textSize="18sp"
+            app:layout_constraintBottom_toBottomOf="@+id/tvTotalViews"
+            app:layout_constraintStart_toEndOf="@+id/imFav"
+            app:layout_constraintTop_toTopOf="@+id/tvTotalViews"
+            app:layout_constraintVertical_bias="0.0" />
     </androidx.constraintlayout.widget.ConstraintLayout>
+
+    <TextView
+        android:id="@+id/tvName"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_marginStart="10dp"
+        android:gravity="left"
+        android:paddingRight="15dp"
+        android:paddingBottom="5dp"
+        android:text="TextView"
+        android:textColor="@color/grey"
+        android:textSize="13sp"
+        android:textStyle="normal"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="@+id/edit_panel_layout"
+        app:layout_constraintStart_toStartOf="@+id/edit_panel_layout"
+        app:layout_constraintTop_toBottomOf="@+id/edit_panel_layout" />
 </androidx.constraintlayout.widget.ConstraintLayout>

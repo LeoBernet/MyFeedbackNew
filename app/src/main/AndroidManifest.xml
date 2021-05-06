@@ -3,34 +3,58 @@
     xmlns:tools="http://schemas.android.com/tools"
     package="com.android.leobernet.myfeedback">
 
-    <uses-permission android:name="android.permission.INTERNET"/>
+    <uses-permission android:name="android.permission.INTERNET" />
 
     <application
         android:allowBackup="true"
         android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"
+        android:requestLegacyExternalStorage="true"
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
-        tools:replace="android:theme"
-        android:requestLegacyExternalStorage="true"
-        android:theme="@style/Theme.MyFeedback">
+        android:theme="@style/Theme.MyFeedback"
+        tools:replace="android:theme">
+
+        <activity
+            android:name=".info.SavePrivateData"
+            android:label="@string/save_private_data"
+            android:screenOrientation="portrait"
+            android:theme="@style/FilterThem">
+
+        </activity>
+        <activity
+            android:name=".info.PrivatePolicy"
+            android:label="@string/info_act"
+            android:screenOrientation="portrait"
+            android:theme="@style/FilterThem" />
+        <activity
+            android:name=".InfoAct"
+            android:label="@string/info"
+            android:screenOrientation="portrait"
+            android:theme="@style/FilterThem" />
+        <activity
+            android:name=".filter.FilterAct"
+            android:label="@string/filter_act"
+            android:screenOrientation="portrait"
+            android:theme="@style/FilterThem" />
         <activity
             android:name=".screens.ChooseImagesActivity"
-            android:screenOrientation="portrait">
-        </activity>
-        <activity android:name=".EditActivity"
-            android:screenOrientation="portrait"/>
-        <activity android:name=".ShowLayoutActivity"
-            android:screenOrientation="portrait"/>
-        <activity android:name=".MainActivity"
+            android:screenOrientation="portrait" />
+        <activity
+            android:name=".EditActivity"
+            android:screenOrientation="portrait" />
+        <activity
+            android:name=".ShowLayoutActivity"
+            android:screenOrientation="portrait" />
+        <activity
+            android:name=".MainActivity"
             android:screenOrientation="portrait">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
-        </activity>
-        <!-- Sample AdMob App ID: ca-app-pub-3940256099942544~3347511713 -->
+        </activity> <!-- Sample AdMob App ID: ca-app-pub-3940256099942544~3347511713 -->
         <meta-data
             android:name="com.google.android.gms.ads.APPLICATION_ID"
             android:value="ca-app-pub-3741100340098869~6158539072" />
