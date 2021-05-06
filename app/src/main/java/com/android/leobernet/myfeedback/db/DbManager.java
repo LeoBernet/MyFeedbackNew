@@ -29,6 +29,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class DbManager {
+
     public static final String MAIN_ADS_PATH = "main_ads_path";
     public static final String MY_FAV_PATH = "my_fav";
     public static final String FAV_ADS_PATH = "fav_path";
