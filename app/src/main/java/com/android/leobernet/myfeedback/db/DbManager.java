@@ -2,6 +2,7 @@ package com.android.leobernet.myfeedback.db;
 
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.util.Log;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
@@ -34,8 +35,8 @@ public class DbManager {
     public static final String MY_FAV_PATH = "my_fav";
     public static final String FAV_ADS_PATH = "fav_path";
     public static final String USER_FAV_ID = "userFavId";
-    public static final String ORDER_BY_CAT_TIME = "/status/cat_time";
-    public static final String ORDER_BY_TIME = "/status/filter_by_time";
+    public static final String ORDER_BY_ADDRESS_CAT_TIME = "/status/cat_address_time";
+    public static final String ORDER_BY_ADDRESS_TIME = "/status/address_time";
     public static final String TOTAL_VIEWS = "status/totalViews";
     private Context context;
     private Query mQuery;
@@ -49,9 +50,10 @@ public class DbManager {
     private DatabaseReference mainNode;
     private String filter;
     private String orderByFilter;
+    private String searchText = "";
 
-    public DbManager(DataSender dataSender, Context context) {
-        this.dataSender = dataSender;
+    public DbManager(Context context) {
+        if (context instanceof DataSender)dataSender = (DataSender)context;
         this.context = context;
         newPostList = new ArrayList<>();
         db = FirebaseDatabase.getInstance();
@@ -63,6 +65,11 @@ public class DbManager {
     public void onResume(SharedPreferences pref){
         filter = pref.getString(MyConstants.FILTER,"");
         orderByFilter = pref.getString(MyConstants.ORDER_BY__FILTER,"");
+    }
+
+    public void clearFilter(){
+        filter = "";
+        orderByFilter = "";
     }
 
     public void deleteItem(final NewPost newPost) {
@@ -155,38 +162,40 @@ public class DbManager {
     public void getMyAds(String orderBy) {
 
         mQuery = mainNode.orderByChild(orderBy).equalTo(mAuth.getUid());
-        readDataUpdate();
+        readDataUpdate(MyConstants.DIF_CAT);
     }
 
-    public void getDataFromDb(String cat, String lastTime,boolean lastPage) {
+    public void getDataFromDb(String cat, String lastAddressTime) {
 
+        String realCat = cat;
         if (mAuth.getUid() == null) return;
-        String divider = "_";
-        String orderBy = (cat.equals(MyConstants.DIF_CAT)) ? ORDER_BY_TIME : ORDER_BY_CAT_TIME;
-        if (cat.equals(MyConstants.DIF_CAT)) {
-            divider = "";
+        String orderBy = (cat.equals(MyConstants.DIF_CAT)) ? ORDER_BY_ADDRESS_TIME : ORDER_BY_ADDRESS_CAT_TIME;
+        cat += "_";
+        if (orderBy.equals(ORDER_BY_ADDRESS_TIME)) {
+
             cat = "";
         }
-        if (!orderByFilter.equals("")){
-            orderBy = orderByFilter;
-            divider = "";
-        }
-       if (!lastPage)
-           mQuery = mainNode.orderByChild(orderBy).startAt(cat).endAt(cat + divider + lastTime + "\uf8ff").limitToLast(MyConstants.ADS_LIMIT);
-       else
-           mQuery = mainNode.orderByChild(orderBy).startAt(cat + divider + lastTime).limitToFirst(MyConstants.ADS_LIMIT);
+        if (!orderByFilter.isEmpty()){
 
-        readDataUpdate();
+            orderBy = (cat.isEmpty()) ? "/status/" + orderByFilter : "/status/" + "cat_" + orderByFilter;
+        }
+
+        Log.d("MyLog","order by:" + cat + filter + lastAddressTime);
+
+        String address = searchText;
+        if (!lastAddressTime.isEmpty()) address = "";
+        mQuery = mainNode.orderByChild(orderBy).startAt(cat + filter + searchText).endAt(cat + filter + address + lastAddressTime + "\uf8ff").limitToLast(MyConstants.ADS_LIMIT);
+        readDataUpdate(realCat);
     }
 
-    public void getSearchResult(String searchText) {
+    /*public void getSearchResult(String searchText) {
         if (mAuth.getUid() == null) return;
         DatabaseReference dbRef = db.getReference(MAIN_ADS_PATH);
         mQuery = dbRef.orderByChild("/status/" + orderByFilter).startAt(filter + searchText).endAt(filter + searchText + "\uf8ff").limitToLast(MyConstants.ADS_LIMIT);
         readDataUpdate();
-    }
+    }*/
 
-    public void readDataUpdate() {
+    public void readDataUpdate(String cat) {
         mQuery.addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
@@ -212,7 +221,7 @@ public class DbManager {
 
                         newPost.setTotal_views(statusItem.totalViews);
                     }
-                    newPostList.add(newPost);
+                    if (newPost != null) if(cat.equals(newPost.getCat()) || cat.equals(MyConstants.DIF_CAT))newPostList.add(newPost);
                 }
                 dataSender.onDataRecived(newPostList);
             }
@@ -272,5 +281,9 @@ public class DbManager {
 
     public String getMyFavAdsNode() {
         return FAV_ADS_PATH + "/" + mAuth.getUid() + "/" + USER_FAV_ID;
+    }
+
+    public void setSearchText(String searchText) {
+        this.searchText = searchText;
     }
 }

@@ -1,13 +1,11 @@
 package com.android.leobernet.myfeedback.adapter
 
 import android.app.AlertDialog
-import android.content.Context
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
-import com.android.leobernet.myfeedback.EditActivity
 import com.android.leobernet.myfeedback.R
 
 class SelectCountryAdapter(private val dialog: AlertDialog,val tvText : TextView) : RecyclerView.Adapter<SelectCountryAdapter.ItemHolder>(){

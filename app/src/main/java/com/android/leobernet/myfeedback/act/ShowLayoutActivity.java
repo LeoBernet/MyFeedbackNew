@@ -1,4 +1,4 @@
-package com.android.leobernet.myfeedback;
+package com.android.leobernet.myfeedback.act;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.viewpager.widget.ViewPager;
@@ -9,6 +9,7 @@ import android.text.method.ScrollingMovementMethod;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import com.android.leobernet.myfeedback.R;
 import com.android.leobernet.myfeedback.adapter.ImageAdapter;
 import com.android.leobernet.myfeedback.db.NewPost;
 import com.android.leobernet.myfeedback.utils.MyConstants;
@@ -30,6 +31,7 @@ public class ShowLayoutActivity extends AppCompatActivity {
         init();
     }
     private void init() {
+
         imagesUris = new ArrayList<>();
         ViewPager vp = findViewById(R.id.view_pager);
         imAdapter = new ImageAdapter(this);

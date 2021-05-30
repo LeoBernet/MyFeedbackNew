@@ -1,4 +1,4 @@
-package com.android.leobernet.myfeedback;
+package com.android.leobernet.myfeedback.act;
 
 import android.app.ProgressDialog;
 import android.content.Intent;
@@ -18,11 +18,11 @@ import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.viewpager.widget.ViewPager;
 
+import com.android.leobernet.myfeedback.R;
 import com.android.leobernet.myfeedback.adapter.ImageAdapter;
 import com.android.leobernet.myfeedback.databinding.EditLayoutBinding;
 import com.android.leobernet.myfeedback.db.DbManager;
 import com.android.leobernet.myfeedback.db.NewPost;
-import com.android.leobernet.myfeedback.status.StatusItem;
 import com.android.leobernet.myfeedback.info.PrivatePolicy;
 import com.android.leobernet.myfeedback.screens.ChooseImagesActivity;
 import com.android.leobernet.myfeedback.status.StatusManager;
@@ -304,7 +304,7 @@ public class EditActivity extends AppCompatActivity implements OnBitmapLoaded {
     }
 
     public void onClickSavePost(View view) {
-        if (!isFieldEmpty()){
+        if (!isFieldEmpty()) {
             Toast.makeText(this, R.string.empty_field_error, Toast.LENGTH_LONG).show();
             return;
         }
@@ -335,10 +335,10 @@ public class EditActivity extends AppCompatActivity implements OnBitmapLoaded {
         CheckBox checkBox = rootElement.editCheckBox;
 
 
-        return(!getString(R.string.select_country).equals(country)
+        return (!getString(R.string.select_country).equals(country)
                 && !getString(R.string.select_city).equals(city)
                 && !TextUtils.isEmpty(address) && !TextUtils.isEmpty(title)
-                && !TextUtils.isEmpty(disc)&& !TextUtils.isEmpty(house)
+                && !TextUtils.isEmpty(disc) && !TextUtils.isEmpty(house)
                 && checkBox.isChecked());
     }
 
@@ -476,7 +476,7 @@ public class EditActivity extends AppCompatActivity implements OnBitmapLoaded {
         });
     }
 
-    public void onClickPrivatePolicy(View view){
+    public void onClickPrivatePolicy(View view) {
         Intent intent = new Intent(EditActivity.this, PrivatePolicy.class);
         startActivity(intent);
     }

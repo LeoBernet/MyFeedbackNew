@@ -7,7 +7,6 @@ import android.content.Intent;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Button;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
@@ -17,11 +16,11 @@ import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.android.leobernet.myfeedback.db.DbManager;
-import com.android.leobernet.myfeedback.EditActivity;
-import com.android.leobernet.myfeedback.MainActivity;
+import com.android.leobernet.myfeedback.act.EditActivity;
+import com.android.leobernet.myfeedback.act.MainActivity;
 import com.android.leobernet.myfeedback.db.NewPost;
 import com.android.leobernet.myfeedback.R;
-import com.android.leobernet.myfeedback.ShowLayoutActivity;
+import com.android.leobernet.myfeedback.act.ShowLayoutActivity;
 import com.android.leobernet.myfeedback.utils.MyConstants;
 import com.google.firebase.auth.FirebaseUser;
 import com.squareup.picasso.Picasso;
@@ -41,9 +40,8 @@ public class PostAdapter extends RecyclerView.Adapter<PostAdapter.ViewHolderData
     private int VIEW_TYPE_END_BUTTON = 1;
     public boolean isStartPage = true;
     private final int NEXT_ADS_B = 1;
-    private final int BACK_ADS_B = 2;
-    private int adsButtonState = 0;
     private boolean isTotalViewsAdded = false;
+    private boolean needClear = true;
 
     public PostAdapter(List<NewPost> arrayPost, Context context, OnItemClickCustom onItemClickCustom) {
         this.mainPostList = arrayPost;
@@ -67,25 +65,17 @@ public class PostAdapter extends RecyclerView.Adapter<PostAdapter.ViewHolderData
     @Override
     public void onBindViewHolder(@NonNull ViewHolderData holder, int position) {
 
-        switch (mainPostList.get(position).getUid()){
-
-            case NEXT_PAGE : holder.setNextItemData();
-
-                break;
-
-            case BACK_PAGE : holder.setBackItemData();
-
-                break;
-            default:
-                holder.setData(mainPostList.get(position));
-                setFavIfSelected(holder);
-                break;
+        if (NEXT_PAGE.equals(mainPostList.get(position).getUid())) {
+            holder.setNextItemData();
+        } else {
+            holder.setData(mainPostList.get(position));
+            setFavIfSelected(holder);
         }
     }
 
     @Override
     public int getItemViewType(int position) {
-        if (mainPostList.get(position).getUid().equals(NEXT_PAGE)||mainPostList.get(position).getUid().equals(BACK_PAGE)){
+        if (mainPostList.get(position).getUid().equals(NEXT_PAGE)){
             myViewType = 1;
         } else {
             myViewType = 0;
@@ -123,31 +113,16 @@ public class PostAdapter extends RecyclerView.Adapter<PostAdapter.ViewHolderData
             itemView.setOnClickListener(this);
         }
 
-        public void setBackItemData() {
-            itemView.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-
-                    dbManager.getDataFromDb(((MainActivity) context)
-                            .current_cat, mainPostList.get(1).getTime(),true);
-
-                    ((MainActivity) context).rcView.scrollToPosition(0);
-                    adsButtonState = BACK_ADS_B;
-                }
-            });
-        }
-
         public void setNextItemData() {
             itemView.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
 
-                    dbManager.getDataFromDb(((MainActivity) context)
-                            .current_cat, mainPostList.get(mainPostList.size() - 2).getTime(),false);
-
-                    ((MainActivity) context).rcView.scrollToPosition(0);
+                    String lastAddressTime = mainPostList.get(mainPostList.size() - 2).getAddress().toLowerCase() + "_"
+                            + mainPostList.get(mainPostList.size() - 2).getTime();
+                    dbManager.getDataFromDb(((MainActivity) context).current_cat,lastAddressTime);
                     isStartPage = false;
-                    adsButtonState = NEXT_ADS_B;
+                    needClear = false;
                 }
             });
         }
@@ -254,31 +229,31 @@ public class PostAdapter extends RecyclerView.Adapter<PostAdapter.ViewHolderData
     }
 
     public void updateAdapter(List<NewPost> listData) {
-        mainPostList.clear();
-            if (!isStartPage && listData.size() == MyConstants.ADS_LIMIT || adsButtonState == NEXT_ADS_B && !isStartPage) {
-
-                NewPost tempPost = new NewPost();
-                tempPost.setUid(BACK_PAGE);
-                mainPostList.add(tempPost);
-
-            } else if (!isStartPage && listData.size() < MyConstants.ADS_LIMIT && adsButtonState == BACK_ADS_B) {
-                loadFirstPage();
+        if (needClear){
+            mainPostList.clear();
+        }else{
+            listData.remove(0);
         }
 
         if (listData.size() == MyConstants.ADS_LIMIT){
-
             NewPost tempPost = new NewPost();
             tempPost.setUid(NEXT_PAGE);
             listData.add(tempPost);
         }
-        mainPostList.addAll(listData);
-        notifyDataSetChanged();
-        adsButtonState = 0;
-    }
-
-    private void loadFirstPage() {
-        isStartPage = true;
-        dbManager.getDataFromDb(((MainActivity) context).current_cat, "",false);
+        int mainArraySize = mainPostList.size() -1;
+        if (mainArraySize == -1)mainArraySize = 0;
+        mainPostList.addAll(mainArraySize,listData);
+        if (mainArraySize == 0){
+            notifyDataSetChanged();
+        }else{
+            notifyItemRangeChanged(mainArraySize,listData.size());
+        }
+        if (listData.size() < MyConstants.ADS_LIMIT -1 && mainPostList.size() > 0){
+            int pos = mainPostList.size()-1;
+            mainPostList.remove(pos);
+            notifyItemRemoved(pos);
+        }
+        needClear = true;
     }
 
     public void setDbManager(DbManager dbManager) {

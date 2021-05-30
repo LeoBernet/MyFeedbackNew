@@ -2,13 +2,12 @@ package com.android.leobernet.myfeedback.accounthelper;
 
 import android.content.DialogInterface;
 import android.content.Intent;
-import android.util.Log;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AlertDialog;
 
-import com.android.leobernet.myfeedback.MainActivity;
+import com.android.leobernet.myfeedback.act.MainActivity;
 import com.android.leobernet.myfeedback.R;
 import com.google.android.gms.auth.api.signin.GoogleSignIn;
 import com.google.android.gms.auth.api.signin.GoogleSignInClient;

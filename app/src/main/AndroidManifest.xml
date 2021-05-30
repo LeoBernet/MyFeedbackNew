@@ -9,7 +9,6 @@
         android:allowBackup="true"
         android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"
-        android:requestLegacyExternalStorage="true"
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/Theme.MyFeedback"
@@ -28,7 +27,7 @@
             android:screenOrientation="portrait"
             android:theme="@style/FilterThem" />
         <activity
-            android:name=".InfoAct"
+            android:name=".act.InfoAct"
             android:label="@string/info"
             android:screenOrientation="portrait"
             android:theme="@style/FilterThem" />
@@ -41,13 +40,13 @@
             android:name=".screens.ChooseImagesActivity"
             android:screenOrientation="portrait" />
         <activity
-            android:name=".EditActivity"
+            android:name=".act.EditActivity"
             android:screenOrientation="portrait" />
         <activity
-            android:name=".ShowLayoutActivity"
+            android:name=".act.ShowLayoutActivity"
             android:screenOrientation="portrait" />
         <activity
-            android:name=".MainActivity"
+            android:name=".act.MainActivity"
             android:screenOrientation="portrait">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />

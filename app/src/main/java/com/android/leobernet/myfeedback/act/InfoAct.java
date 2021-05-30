@@ -1,4 +1,4 @@
-package com.android.leobernet.myfeedback;
+package com.android.leobernet.myfeedback.act;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.ActionBar;
@@ -9,6 +9,7 @@ import android.os.Bundle;
 import android.view.MenuItem;
 import android.view.View;
 
+import com.android.leobernet.myfeedback.R;
 import com.android.leobernet.myfeedback.info.PrivatePolicy;
 import com.android.leobernet.myfeedback.info.SavePrivateData;
 

@@ -5,7 +5,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@color/niagara"
-    tools:context=".ShowLayoutActivity">
+    tools:context=".act.ShowLayoutActivity">
 
         <TextView
             android:id="@+id/tvDisc1"

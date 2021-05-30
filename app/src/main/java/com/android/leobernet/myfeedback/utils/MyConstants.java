@@ -1,6 +1,6 @@
 package com.android.leobernet.myfeedback.utils;
 
-import com.android.leobernet.myfeedback.MainActivity;
+import com.android.leobernet.myfeedback.act.MainActivity;
 
 public class MyConstants {
     public static final String DIF_CAT = "dif";
